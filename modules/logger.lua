@@ -1,7 +1,7 @@
 local Logger = {}
 
-Logger.LOG_LEVEL = settings.startup["DedLib_debug_level"].value
-Logger.LOG_LOCATION = settings.startup["DedLib_debug_location"].value
+Logger.LOG_LEVEL_CONSOLE = settings.startup["DedLib_logger_level_console"].value
+Logger.LOG_LEVEL_FILE = settings.startup["DedLib_logger_level_file"].value
 
 Logger.ALL_LOG_LEVELS = { "off", "fatal", "error", "warn", "info", "debug", "trace" }
 
@@ -92,6 +92,8 @@ end
 -- prefix
 -- modName
 -- levelOverride
+-- consoleLevelOverride
+-- fileLevelOverride
 function Logger.create(args)
     if not args then
         args = {}
@@ -100,7 +102,8 @@ function Logger.create(args)
         args = { prefix = args }
     end
     local modName = get_mod_name(args.modName)
-    local configuredLogLevel = Logger.get_level_value(args.levelOverride or Logger.LOG_LEVEL)
+    local consoleConfiguredLogLevel = Logger.get_level_value(args.consoleLevelOverride or args.levelOverride or Logger.LOG_LEVEL_CONSOLE)
+    local fileConfiguredLogLevel = Logger.get_level_value(args.fileLevelOverride or args.levelOverride or Logger.LOG_LEVEL_FILE)
 
     local prefix = ""
     if args.prefix then
@@ -111,7 +114,7 @@ function Logger.create(args)
     local stub = function() end
 
     -- Return stub logger
-    if configuredLogLevel <= 1 then
+    if consoleConfiguredLogLevel <= 1 and fileConfiguredLogLevel <= 1 then
         l.fatal = stub
         l.error = stub
         l.warn = stub
@@ -139,31 +142,40 @@ function Logger.create(args)
         return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. message
     end
 
-    function l._log(message, level, blockPrint)
-        local s = l._format_message(message, level, blockPrint)
-        if s == l._LAST_MESSAGE then
+    function l._log(logFunc, message, level, blockPrint)
+        if message == nil then message = "[nil]" end -- nil safety
+        local formatted = l._format_message(message, level, blockPrint)
+        if formatted == l._LAST_MESSAGE then
             l._SAME_MESSAGE_COUNT = l._SAME_MESSAGE_COUNT + 1
-            s = l._format_message(message, level, blockPrint, l._SAME_MESSAGE_COUNT)
+            formatted = l._format_message(message, level, blockPrint, l._SAME_MESSAGE_COUNT)
         else
             l._SAME_MESSAGE_COUNT = 0
-            l._LAST_MESSAGE = s
+            l._LAST_MESSAGE = formatted
         end
-        Logger._log(s)
+        logFunc(formatted)
     end
 
     local insert_method = function(level)
         local levelValue = Logger.get_level_value(level)
         local upperLevel = string.upper(level)
 
-        if configuredLogLevel >= levelValue then
-            l[level] = function(m, blockPrint)
-                if m == nil then
-                    m = "[nil]"
-                end -- nil safety
-                l._log(m, upperLevel, blockPrint)
-            end
+        local logConsole = consoleConfiguredLogLevel >= levelValue
+        local logFile = fileConfiguredLogLevel >= levelValue
+
+        local logFunc = nil
+        if logConsole and logFile then
+            logFunc = Logger._log_both
+        elseif logConsole then
+            logFunc = Logger._log_console
+        elseif logFile then
+            logFunc = Logger._log_file
         else
             l[level] = stub
+            return
+        end
+
+        l[level] = function(m, blockPrint)
+            l._log(logFunc, m, upperLevel, blockPrint)
         end
     end
 

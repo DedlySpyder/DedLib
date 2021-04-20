@@ -1,8 +1,11 @@
-local LOGGER = require("modules/logger")
-local t_log = LOGGER.create{modName = "TEST"}
+local Logger = require("modules/logger")
+Logger.LOG_LEVEL_CONSOLE = "trace"
+Logger.LOG_LEVEL_FILE = "trace"
+
+local t_log = Logger.create{modName = "TEST"}
 
 return function()
-    local log = LOGGER.create()
+    local log = Logger.create()
 
     t_log.trace("Testing Levels:")
     log.fatal("fatal message")
@@ -16,35 +19,38 @@ return function()
     log.info("duplicate")
     log.info("duplicate")
     log.info("duplicate")
-    log.info("duplicate")
 
     t_log.trace("Testing Table:")
     log.info({foo = "bar"})
 
-    local newLog = LOGGER.create{modName = "new_test_mod"}
-    t_log.trace("Testing new logger:")
+    local newLog = Logger.create{modName = "new_test_mod"}
+    t_log.trace("Testing new logger (just fatal and trace):")
     newLog.fatal("fatal message")
-    newLog.error("error message")
-    newLog.warn("warn message")
-    newLog.info("info message")
-    newLog.debug("debug message")
     newLog.trace("trace message")
 
-    local prefixLog = LOGGER.create{modName = "prefix_mod", prefix = "foobar"}
+    local prefixLog = Logger.create{modName = "prefix_mod", prefix = "foobar"}
     t_log.trace("Testing prefix logger:")
     prefixLog.info("test")
-    prefixLog.info("test1")
 
-    local infoLogger = LOGGER.create{modName = "info_logger", levelOverride = "info"}
-    t_log.trace("Testing info logger (running all, expecting no debug or trace):")
-    infoLogger.fatal("fatal message")
-    infoLogger.error("error message")
-    infoLogger.warn("warn message")
-    infoLogger.info("info message")
-    infoLogger.debug("debug message")
-    infoLogger.trace("trace message")
+    local infoConsoleLogger = Logger.create{ modName = "info_console_logger", consoleLevelOverride = "error", fileLevelOverride = "off"}
+    t_log.trace("Testing console error logger (running all, expecting just fatal and error):")
+    infoConsoleLogger.fatal("fatal message")
+    infoConsoleLogger.error("error message")
+    infoConsoleLogger.warn("warn message")
+    infoConsoleLogger.info("info message")
+    infoConsoleLogger.debug("debug message")
+    infoConsoleLogger.trace("trace message")
 
-    local offLogger = LOGGER.create{modName = "offLogger", levelOverride = "off"}
+    local infoFileLogger = Logger.create{ modName = "info_file_logger", consoleLevelOverride = "off", fileLevelOverride = "info"}
+    t_log.trace("Testing file info logger (running all, expecting no debug or trace):")
+    infoFileLogger.fatal("fatal message")
+    infoFileLogger.error("error message")
+    infoFileLogger.warn("warn message")
+    infoFileLogger.info("info message")
+    infoFileLogger.debug("debug message")
+    infoFileLogger.trace("trace message")
+
+    local offLogger = Logger.create{modName = "off_logger", levelOverride = "off"}
     t_log.trace("Testing off logger (running all, expecting none):")
     offLogger.fatal("fatal message")
     offLogger.error("error message")

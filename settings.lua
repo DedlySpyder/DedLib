@@ -1,20 +1,20 @@
 data:extend({
 	-- Startup settings
 	{
-		name = "DedLib_debug_level",
+		name = "DedLib_logger_level_console",
 		type = "string-setting",
 		setting_type = "startup",
-		default_value = "warn",
+		default_value = "off",
 		allowed_values = {"off", "fatal", "error", "warn", "info", "debug", "trace"},
 		order = "900"
 	},
 	{
-		name = "DedLib_debug_location",
+		name = "DedLib_logger_level_file",
 		type = "string-setting",
 		setting_type = "startup",
-		default_value = "console",
-		allowed_values = {"console", "file", "both"},
-		order = "950"
+		default_value = "off",
+		allowed_values = {"off", "fatal", "error", "warn", "info", "debug", "trace"},
+		order = "910"
 	},
 
 	{
