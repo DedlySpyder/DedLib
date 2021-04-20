@@ -28,6 +28,66 @@ local get_mod_name = function(modName)
 end
 
 
+
+-- Log writing functions
+function Logger._check_is_game()
+    if not Logger._IS_GAME then
+        if game then
+            Logger._IS_GAME = true
+        end
+    end
+    return Logger._IS_GAME
+end
+Logger._check_is_game()
+
+-- Not sure on init if `game` is initialized
+-- If it is, then this check is no longer needed
+function Logger._log_console(message)
+    if Logger._check_is_game() then
+        Logger._log_console = Logger._log_console_in_game
+        Logger._log_console(message)
+    end
+end
+
+function Logger._log_console_in_game(message)
+    for _, player in pairs(game.players) do
+        if player and player.valid then
+            player.print(message)
+        end
+    end
+end
+
+Logger._log_file = log
+
+function Logger._log_both(message)
+    Logger._log_console(message)
+    Logger._log_file(message)
+end
+
+
+if Logger.LOG_LOCATION == "console" then
+    Logger._log = Logger._log_console
+elseif Logger.LOG_LOCATION == "file" then
+    Logger._log = Logger._log_file
+else
+    Logger._log = Logger._log_both
+end
+
+
+
+-- Log message formatting
+function Logger._get_tick(count)
+    if Logger._check_is_game() then
+        Logger._get_tick = Logger._get_tick_in_game
+        return Logger._get_tick(count)
+    end
+    return ""
+end
+
+function Logger._get_tick_in_game(count)
+    return "[" .. game.tick .. count .. "]"
+end
+
 --TODO docs
 -- prefix
 -- modName
@@ -48,9 +108,7 @@ function Logger.create(args)
     end
 
     local l = {}
-    local stub = function()
-    end
-
+    local stub = function() end
 
     -- Return stub logger
     if configuredLogLevel <= 1 then
@@ -61,41 +119,6 @@ function Logger.create(args)
         l.debug = stub
         l.trace = stub
         return l
-    end
-
-    local _log_console = function(message)
-        if game then
-            for _, player in pairs(game.players) do
-                if player and player.valid then
-                    player.print(message)
-                end
-            end
-        end
-    end
-
-    local _log_both = function(message)
-        _log_console(message)
-        log(message)
-    end
-
-    local _log = stub
-    if Logger.LOG_LOCATION == "console" then
-        _log = _log_console
-    elseif Logger.LOG_LOCATION == "file" then
-        _log = log
-    else
-        _log = _log_both
-    end
-
-    -- TODO - this is broken - init before tick 0 means I don't get any tick values
-    if game then
-        function l._get_tick(count)
-            return "[" .. game.tick .. count .. "]"
-        end
-    else
-        function l._get_tick()
-            return ""
-        end
     end
 
     function l._format_message(message, level, blockPrint, count)
@@ -113,7 +136,7 @@ function Logger.create(args)
             end
         end
 
-        return l._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. message
+        return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. message
     end
 
     function l._log(message, level, blockPrint)
@@ -125,7 +148,7 @@ function Logger.create(args)
             l._SAME_MESSAGE_COUNT = 0
             l._LAST_MESSAGE = s
         end
-        _log(s)
+        Logger._log(s)
     end
 
     local insert_method = function(level)
