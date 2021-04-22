@@ -12,7 +12,7 @@ data:extend({
 		name = "DedLib_logger_level_file",
 		type = "string-setting",
 		setting_type = "startup",
-		default_value = "off",
+		default_value = "error",
 		allowed_values = {"off", "fatal", "error", "warn", "info", "debug", "trace"},
 		order = "910"
 	},
