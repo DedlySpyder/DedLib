@@ -94,6 +94,10 @@ end
 -- levelOverride
 -- consoleLevelOverride
 -- fileLevelOverride
+
+--TODO uses
+-- log levels
+-- _LOG_LEVEL if you want to act on a certain level
 function Logger.create(args)
     if not args then
         args = {}
@@ -102,8 +106,11 @@ function Logger.create(args)
         args = { prefix = args }
     end
     local modName = get_mod_name(args.modName)
-    local consoleConfiguredLogLevel = Logger.get_level_value(args.consoleLevelOverride or args.levelOverride or Logger.LOG_LEVEL_CONSOLE)
-    local fileConfiguredLogLevel = Logger.get_level_value(args.fileLevelOverride or args.levelOverride or Logger.LOG_LEVEL_FILE)
+
+    local consoleLogLevel = args.consoleLevelOverride or args.levelOverride or Logger.LOG_LEVEL_CONSOLE
+    local consoleConfiguredLogLevel = Logger.get_level_value(consoleLogLevel)
+    local fileLogLevel = args.fileLevelOverride or args.levelOverride or Logger.LOG_LEVEL_FILE
+    local fileConfiguredLogLevel = Logger.get_level_value(fileLogLevel)
 
     local prefix = ""
     if args.prefix then
@@ -112,6 +119,13 @@ function Logger.create(args)
 
     local l = {}
     local stub = function() end
+
+    if consoleConfiguredLogLevel > fileConfiguredLogLevel then
+        l._LOG_LEVEL = consoleLogLevel
+    else
+        -- Either file is higher, or they are the same
+        l._LOG_LEVEL = fileLogLevel
+    end
 
     -- Return stub logger
     if consoleConfiguredLogLevel <= 1 and fileConfiguredLogLevel <= 1 then
