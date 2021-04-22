@@ -131,12 +131,15 @@ function Logger.create(args)
             count = ""
         end
 
-        if type(message) == "table" then
+        local mType = type(message)
+        if mType == "table" then
             if blockPrint then
                 message = serpent.block(message)
             else
                 message = serpent.line(message)
             end
+        elseif mType ~= "string" then
+            message = tostring(message)
         end
 
         return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. message
