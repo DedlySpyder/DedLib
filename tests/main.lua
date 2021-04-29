@@ -5,3 +5,8 @@ local logger = require("logger")
 return function()
     logger()
 end
+
+--local tester = require("tester")
+--return function()
+--    tester()
+--end
