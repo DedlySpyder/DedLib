@@ -127,6 +127,10 @@ function Logger.create(args)
         l._LOG_LEVEL = fileLogLevel
     end
 
+    function l.level_is_less_than(level)
+        return Logger.get_level_value(l._LOG_LEVEL) < Logger.get_level_value(level)
+    end
+
     -- Return stub logger
     if consoleConfiguredLogLevel <= 1 and fileConfiguredLogLevel <= 1 then
         l.fatal = stub
