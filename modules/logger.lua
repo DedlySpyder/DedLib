@@ -164,7 +164,6 @@ function Logger.create(args)
     end
 
     function l._log(logFunc, message, level, blockPrint)
-        if message == nil then message = "[nil]" end -- nil safety
         local formatted = l._format_message(message, level, blockPrint)
         if formatted == l._LAST_MESSAGE then
             l._SAME_MESSAGE_COUNT = l._SAME_MESSAGE_COUNT + 1
