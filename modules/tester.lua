@@ -37,10 +37,16 @@ function Tester.add_tests(tests, testerName)
             if string.find(string.lower(name), "test") then
                 Logger.debug("Adding test " .. name)
                 tester["tests"][name] = func
+            else
+                Logger.debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
             end
         end
         Logger.debug("Done adding tests to " .. tester["name"])
-        table.insert(Tester._TESTERS, tester)
+        if table_size(tester["tests"]) then
+            table.insert(Tester._TESTERS, tester)
+        else
+            Logger.warn("No tests for " .. tester["name"] .. ' found. Did the test functions names contain the word "test"?')
+        end
     else
         Logger.error('Failed to add new tests, variable needs to be a table of "test_name" -> test_function')
         if Logger.level_is_less_than("debug") then
@@ -52,14 +58,14 @@ function Tester.add_tests(tests, testerName)
     end
 end
 
-function Tester.assert_equals(x, y, message)
-    if serpent.line(x) ~= serpent.line(y) then
+function Tester.assert_equals(expected, actual, message)
+    if serpent.line(expected) ~= serpent.line(actual) then
         if message then
             message = message .. "\n"
         else
             message = ""
         end
-        message = message .. "Assertion failed. <" .. serpent.line(x) .. "> does not equal <" .. serpent.line(y) .. ">"
+        message = message .. "Assertion failed. Expected <" .. serpent.line(expected) .. "> - Actual <" .. serpent.line(actual) .. ">"
         error(message)
     end
 end

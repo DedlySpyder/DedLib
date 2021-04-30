@@ -130,8 +130,23 @@ return function()
         end
     }, "duplicate")
 
+    Tester.add_tests({
+        SHOULD_NOT_SEE_THIS_FUNC = function()
+            Logger.error("NOT A TEST")
+        end
+    }, "NO TESTS FOR ME")
+
+    Tester.add_tests({
+        test_good = function()
+            Logger.info("Good test for some ignored tester")
+        end,
+        SHOULD_NOT_SEE_THIS_FUNC = function()
+            Logger.error("NOT A TEST")
+        end
+    }, "one test for me")
+
     Logger.trace("Running tester")
     Tester.run()
-    Logger.trace("Expected results of tester run: {failed = 8, success = 4}")
+    Logger.trace("Expected results of tester run: {failed = 8, success = 5}")
     Logger.trace("Actual results of tester run: " .. serpent.line(Tester._COUNTS))
 end
