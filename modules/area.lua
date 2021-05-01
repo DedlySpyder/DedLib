@@ -69,7 +69,7 @@ function Area.standardize_position(position)
         return position
     end
 
-    if #position < 2 then
+    if #position ~= 2 then
         Logger.error("Failed to standardize position missing x and/or y: " .. serpent.line(position))
         return
     end
