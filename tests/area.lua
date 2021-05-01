@@ -95,7 +95,7 @@ local areaOfEntityTests = {
 for _, data in ipairs(areaOfEntityTests) do
     local bb = data["bb"]
     local size = data["size"]
-    local name = "test_lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2] .. "__expected_" .. size
+    local name = "test_area_of_entity__lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2] .. "__expected_" .. size
 
     AreaTests[name] = Tester.create_basic_test({
         valid = true,
@@ -255,6 +255,29 @@ function AreaTests.test_standardize_position_good()
     local expected = {x=1,y=2}
 
     Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
+
+-- Get chunk position from position tests
+local chunkPositionFromPositionTests = {
+    {test = {0,0}, expected = {x=0, y=0}},
+    {test = {0.1,0.1}, expected = {x=0, y=0}},
+    {test = {-1,-1}, expected = {x=-1, y=-1}},
+    {test = {-0.1,-0.1}, expected = {x=-1, y=-1}},
+    {test = {1,-1}, expected = {x=0, y=-1}},
+    {test = {0.1,-0.1}, expected = {x=0, y=-1}},
+    {test = {-1,1}, expected = {x=-1, y=0}},
+    {test = {-0.1,0.1}, expected = {x=-1, y=0}},
+    {test = {32,63}, expected = {x=1, y=1}},
+    {test = {75,50}, expected = {x=2, y=1}},
+}
+
+for _, data in ipairs(chunkPositionFromPositionTests) do
+    local test = data["test"]
+    local expected = data["expected"]
+    local name = "test_get_chunk_position__x_" .. test[1] .. "_y_" .. test[2] .. "__expected_" .. serpent.line(expected)
+
+    AreaTests[name] = Tester.create_basic_test(test, expected, Area.get_chunk_position_from_position)
 end
 
 
