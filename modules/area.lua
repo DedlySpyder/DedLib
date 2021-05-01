@@ -27,21 +27,23 @@ function Area.standardize_bounding_box(bounding_box)
         Logger.trace("Bounding_box has left_top and right_bottom")
         local lf = Area.standardize_position(bounding_box.left_top)
         local rb = Area.standardize_position(bounding_box.right_bottom)
-        if bounding_box.left_top.x == lf.x and
-                bounding_box.left_top.y == lf.y and
-                bounding_box.right_bottom.x == rb.x and
-                bounding_box.right_bottom.y == rb.y then
-            Logger.trace("Bounding_box was already standardized")
-            return bounding_box
-        else
-            local standardized = {left_top = lf, right_bottom = rb}
-            Logger.trace("Bounding_box standardized:")
-            Logger.trace(standardized)
-            return standardized
+        if lf and rb then
+            if bounding_box.left_top.x == lf.x and
+                    bounding_box.left_top.y == lf.y and
+                    bounding_box.right_bottom.x == rb.x and
+                    bounding_box.right_bottom.y == rb.y then
+                Logger.trace("Bounding_box was already standardized")
+                return bounding_box
+            else
+                local standardized = {left_top = lf, right_bottom = rb}
+                Logger.trace("Bounding_box standardized:")
+                Logger.trace(standardized)
+                return standardized
+            end
         end
     end
 
-    if #bounding_box < 2 or type(bounding_box[1]) ~= "table" or type(bounding_box[2]) ~= "table" then
+    if #bounding_box ~= 2 or type(bounding_box[1]) ~= "table" or type(bounding_box[2]) ~= "table" then
         Logger.error("Failed to standardize bounding_box, invalid table(s) (expected {{x,y},{a,b}}): " .. serpent.line(bounding_box))
         return
     end
