@@ -70,6 +70,20 @@ function Tester.assert_equals(expected, actual, message)
     end
 end
 
+function Tester.create_basic_test(testArg, expectedValue, testingFunc)
+    return function()
+        local actual = testingFunc(testArg)
+        Tester.assert_equals(expectedValue, actual, "Input failed for arg: " .. serpent.line(testArg))
+    end
+end
+
+function Tester.create_basic_test_unpack(testArgs, expectedValue, testingFunc)
+    return function()
+        local actual = testingFunc(unpack(testArgs))
+        Tester.assert_equals(expectedValue, actual, "Input failed for args: " .. serpent.line(testArgs))
+    end
+end
+
 function Tester.run()
     Logger.trace("Running all tests")
     for _, tester in ipairs(Tester._TESTERS) do

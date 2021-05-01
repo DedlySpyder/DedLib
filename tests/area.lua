@@ -97,13 +97,10 @@ for _, data in ipairs(areaOfEntityTests) do
     local size = data["size"]
     local name = "test_lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2] .. "__expected_" .. size
 
-    AreaTests[name] = function()
-        local actual = Area.area_of_entity({
-            valid = true,
-            bounding_box = bb
-        })
-        Tester.assert_equals(size, actual)
-    end
+    AreaTests[name] = Tester.create_basic_test({
+        valid = true,
+        bounding_box = bb
+    }, size, Area.area_of_entity)
 end
 
 
