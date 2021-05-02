@@ -281,4 +281,21 @@ for _, data in ipairs(chunkPositionFromPositionTests) do
 end
 
 
+-- Get chunk area from chunk position tests
+local chunkAreaFromChunkPositionTests = {
+    {test = {0,0}, expected = {left_top={x=0, y=0}, right_bottom={x=32, y=32}}},
+    {test = {-1,-1}, expected = {left_top={x=-32, y=-32}, right_bottom={x=0, y=0}}},
+    {test = {-1,0}, expected = {left_top={x=-32, y=0}, right_bottom={x=0, y=32}}},
+    {test = {0,-1}, expected = {left_top={x=0, y=-32}, right_bottom={x=32, y=0}}},
+}
+
+for _, data in ipairs(chunkAreaFromChunkPositionTests) do
+    local test = data["test"]
+    local expected = data["expected"]
+    local name = "test_get_chunk_area_from_chunk_position__x_" .. test[1] .. "_y_" .. test[2] .. "__expected_" .. serpent.line(expected)
+
+    AreaTests[name] = Tester.create_basic_test(test, expected, Area.get_chunk_area_from_chunk_position)
+end
+
+
 return AreaTests
