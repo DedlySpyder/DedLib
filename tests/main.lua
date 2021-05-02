@@ -5,9 +5,8 @@ local logger = require("tests/logger")
 local area = require("tests/area")
 
 return function()
-    logger()
-
     Tester.add_tests(area, "Area")
+    Tester.add_tests(logger, "Logger")
     Tester.run()
 end
 

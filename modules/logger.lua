@@ -6,9 +6,14 @@ Logger.LOG_LEVEL_FILE = settings.startup["DedLib_logger_level_file"].value
 Logger.ALL_LOG_LEVELS = { "off", "fatal", "error", "warn", "info", "debug", "trace" }
 
 function Logger.get_level_value(level)
-    if type(level) == "number" then
+    local levelType = type(level)
+    if levelType == "number" then
         return level
+    elseif levelType ~= "string" then
+        log("[WARN] Logger init: Attempted to get value of non-string level: " .. serpent.line(level))
+        return 0
     end
+
     for i, l in ipairs(Logger.ALL_LOG_LEVELS) do
         if l == level then
             return i
@@ -163,6 +168,7 @@ function Logger.create(args)
         return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. message
     end
 
+    -- TODO - performance? - Can change this to use a formatted string and serpent/tostring the values to add to it to not have the downstream mod do it when unneeded
     function l._log(logFunc, message, level, blockPrint)
         local formatted = l._format_message(message, level, blockPrint)
         if formatted == l._LAST_MESSAGE then
