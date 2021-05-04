@@ -70,15 +70,6 @@ function Logger._log_both(message)
 end
 
 
-if Logger.LOG_LOCATION == "console" then
-    Logger._log = Logger._log_console
-elseif Logger.LOG_LOCATION == "file" then
-    Logger._log = Logger._log_file
-else
-    Logger._log = Logger._log_both
-end
-
-
 
 -- Log message formatting
 function Logger._get_tick(count)
@@ -90,6 +81,11 @@ function Logger._get_tick(count)
 end
 
 function Logger._get_tick_in_game(count)
+    if count then
+        count = "-" .. tostring(count)
+    else
+        count = ""
+    end
     return "[" .. game.tick .. count .. "]"
 end
 
@@ -148,12 +144,6 @@ function Logger.create(args)
     end
 
     function l._format_message(message, level, blockPrint, count)
-        if count then
-            count = "-" .. tostring(count)
-        else
-            count = ""
-        end
-
         local mType = type(message)
         if mType == "table" then
             if blockPrint then
