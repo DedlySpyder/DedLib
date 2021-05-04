@@ -3,16 +3,19 @@ local Logger = LoggerLib.create{modName = "DedLib", prefix = "Tester"}
 
 local Tester = {}
 
--- {name = name, tests = {[name] = func}}
-Tester._TESTERS = {}
-Tester._FAILED_TESTS = {}
-Tester._COUNTS = {success = 0, failed = 0}
-
 --[[
 TODO - notes on tester
 if error has {message = message, stacktrace = debug.traceback()}
 then the message will always be printed on an error, but the stacktrace will be saved for debug mode
 ]]--
+
+function Tester.reset()
+    -- {name = name, tests = {[name] = func}}
+    Tester._TESTERS = {}
+    Tester._FAILED_TESTS = {}
+    Tester._COUNTS = {success = 0, failed = 0}
+end
+Tester.reset()
 
 function Tester.add_test(func, name)
     if type(func) == "function" then
@@ -126,6 +129,12 @@ function Tester.run()
     end
 
     Tester._report_failed()
+
+    -- Reset the tester, but dump the counts in case the end user wants them first
+    local counts = Tester._COUNTS
+    Logger.debug("Resetting tester values")
+    Tester.reset()
+    return counts
 end
 
 function Tester._report_failed()

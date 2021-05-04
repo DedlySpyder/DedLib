@@ -74,7 +74,6 @@ return function()
             "table same",
             true
     )
-    Logger.trace("Final test assert_equals counts: " .. serpent.line(test_assert_counts))
 
     Logger.trace("Loading tests into tester:")
     Tester.add_test(function() Logger.info("Good single test, unnamed") end)
@@ -146,7 +145,17 @@ return function()
     }, "one test for me")
 
     Logger.trace("Running tester")
-    Tester.run()
-    Logger.trace("Expected results of tester run: {failed = 8, success = 5}")
-    Logger.trace("Actual results of tester run: " .. serpent.line(Tester._COUNTS))
+    local actualCounts = Tester.run()
+
+    -- Reporting
+    Logger.debug("Final test assert_equals counts: " .. serpent.line(test_assert_counts))
+
+    local expectedTestCounts = serpent.line({failed = 8, success = 5})
+    local actualTestCounts = serpent.line(actualCounts)
+    Logger.debug("Expected results of tester run: " .. expectedTestCounts)
+    Logger.debug("Actual results of tester run: " .. actualTestCounts)
+
+    if expectedTestCounts ~= actualTestCounts or test_assert_counts["failed"] > 0 then
+        error("Tester tests are failing, cannot accurately run other tests at this time. See debug logs for more details.")
+    end
 end
