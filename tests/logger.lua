@@ -162,68 +162,88 @@ function LoggerTests.test__log_duplicate_messages()
 end
 
 
-return LoggerTests
+-- Log level tests -- fully on
+local fullyOnLogger = Logger.create({ modName = "ModName", prefix = "Prefix", levelOverride = Logger.ALL_LOG_LEVELS[#Logger.ALL_LOG_LEVELS]})
+local fullyOnLoggerUpperLevel
+fullyOnLogger._log = function(logFunc, m, upperLevel, blockPrint) fullyOnLoggerUpperLevel = upperLevel end
 
---return function()
---    local log = Logger.create()
---
---
---    -- TODO need to test in order (kinda)
---    --[[
---    log._log
---    then need to modify it to catch the messages for testing different levels
---    ]]--
---
---    t_log.trace("Testing Levels:")
---    log.fatal("fatal message")
---    log.error("error message")
---    log.warn("warn message")
---    log.info("info message")
---    log.debug("debug message")
---    log.trace("trace message")
---
---    t_log.trace("Testing Duplicates:")
---    log.info("duplicate")
---    log.info("duplicate")
---    log.info("duplicate")
---
---    t_log.trace("Testing Table:")
---    log.info({foo = "bar"})
---
---    local newLog = Logger.create{ modName = "new_test_mod"}
---    t_log.trace("Testing new logger (just fatal and trace):")
---    newLog.fatal("fatal message")
---    newLog.trace("trace message")
---
---    local prefixLog = Logger.create{ modName = "prefix_mod", prefix = "foobar"}
---    t_log.trace("Testing prefix logger:")
---    prefixLog.info("test")
---
---    local infoConsoleLogger = Logger.create{ modName = "info_console_logger", consoleLevelOverride = "error", fileLevelOverride = "off"}
---    t_log.trace("Testing console error logger (running all, expecting just fatal and error):")
---    infoConsoleLogger.fatal("fatal message")
---    infoConsoleLogger.error("error message")
---    infoConsoleLogger.warn("warn message")
---    infoConsoleLogger.info("info message")
---    infoConsoleLogger.debug("debug message")
---    infoConsoleLogger.trace("trace message")
---
---    local infoFileLogger = Logger.create{ modName = "info_file_logger", consoleLevelOverride = "off", fileLevelOverride = "info"}
---    t_log.trace("Testing file info logger (running all, expecting no debug or trace):")
---    infoFileLogger.fatal("fatal message")
---    infoFileLogger.error("error message")
---    infoFileLogger.warn("warn message")
---    infoFileLogger.info("info message")
---    infoFileLogger.debug("debug message")
---    infoFileLogger.trace("trace message")
---
---    local offLogger = Logger.create{ modName = "off_logger", levelOverride = "off"}
---    t_log.trace("Testing off logger (running all, expecting none):")
---    offLogger.fatal("fatal message")
---    offLogger.error("error message")
---    offLogger.warn("warn message")
---    offLogger.info("info message")
---    offLogger.debug("debug message")
---    offLogger.trace("trace message")
---    t_log.trace("Done testing off logger")
---end
+function LoggerTests.test_log_level_fully_on_fatal()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.fatal("message")
+    Tester.assert_equals("FATAL", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_on_error()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.error("message")
+    Tester.assert_equals("ERROR", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_on_warn()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.warn("message")
+    Tester.assert_equals("WARN", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_on_info()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.info("message")
+    Tester.assert_equals("INFO", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_on_debug()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.debug("message")
+    Tester.assert_equals("DEBUG", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_on_trace()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.trace("message")
+    Tester.assert_equals("TRACE", fullyOnLoggerUpperLevel)
+end
+
+
+-- Log level tests -- fully off
+local fullyOffLogger = Logger.create({ modName = "ModName", prefix = "Prefix", levelOverride = Logger.ALL_LOG_LEVELS[1]})
+local fullyOffLoggerUpperLevel
+fullyOffLogger._log = function(logFunc, m, upperLevel, blockPrint) fullyOffLoggerUpperLevel = upperLevel end
+
+function LoggerTests.test_log_level_fully_off_fatal()
+    fullyOffLoggerUpperLevel = nil
+    fullyOffLogger.fatal("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_off_error()
+    fullyOffLoggerUpperLevel = nil
+    fullyOffLogger.error("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_off_warn()
+    fullyOffLoggerUpperLevel = nil
+    fullyOffLogger.warn("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_off_info()
+    fullyOffLoggerUpperLevel = nil
+    fullyOffLogger.info("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_off_debug()
+    fullyOffLoggerUpperLevel = nil
+    fullyOffLogger.debug("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_level_fully_off_trace()
+    fullyOffLoggerUpperLevel = nil
+    fullyOffLogger.trace("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+
+return LoggerTests
