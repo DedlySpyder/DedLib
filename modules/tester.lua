@@ -8,6 +8,12 @@ Tester._TESTERS = {}
 Tester._FAILED_TESTS = {}
 Tester._COUNTS = {success = 0, failed = 0}
 
+--[[
+TODO - notes on tester
+if error has {message = message, stacktrace = debug.traceback()}
+then the message will always be printed on an error, but the stacktrace will be saved for debug mode
+]]--
+
 function Tester.add_test(func, name)
     if type(func) == "function" then
         if not name then name = "Single Test #" .. #Tester._TESTERS end
@@ -66,7 +72,7 @@ function Tester.assert_equals(expected, actual, message)
             message = ""
         end
         message = message .. "Assertion failed. Expected <" .. serpent.line(expected) .. "> - Actual <" .. serpent.line(actual) .. ">"
-        error(message)
+        error({message = message, stacktrace = debug.traceback()})
     end
 end
 
@@ -105,9 +111,15 @@ function Tester.run()
                 Logger.info("Test " .. name .." succeeded")
                 Tester._COUNTS["success"] = Tester._COUNTS["success"] + 1
             else
-                error = tostring(error)
-                Logger.error("Test " .. name .." failed: " .. error)
-                table.insert(Tester._FAILED_TESTS[testerName], {name = name, error = error, stack = debug.traceback()})
+                if error and error["message"] and error["stacktrace"] then
+                    local message = tostring(error["message"])
+                    Logger.error("Test " .. name .." failed: " .. message)
+                    table.insert(Tester._FAILED_TESTS[testerName], {name = name, error = message, stack = error["stacktrace"]})
+                else
+                    error = tostring(error)
+                    Logger.error("Test " .. name .." failed: " .. error)
+                    table.insert(Tester._FAILED_TESTS[testerName], {name = name, error = error, stack = debug.traceback()})
+                end
                 Tester._COUNTS["failed"] = Tester._COUNTS["failed"] + 1
             end
         end
