@@ -55,11 +55,7 @@ function Logger._log_console(message)
 end
 
 function Logger._log_console_in_game(message)
-    for _, player in pairs(game.players) do
-        if player and player.valid then
-            player.print(message)
-        end
-    end
+    game.print(message)
 end
 
 Logger._log_file = log
