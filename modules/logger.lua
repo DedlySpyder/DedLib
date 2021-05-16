@@ -1,7 +1,13 @@
 local Logger = {}
 
-Logger.LOG_LEVEL_CONSOLE = settings.startup["DedLib_logger_level_console"].value
-Logger.LOG_LEVEL_FILE = settings.startup["DedLib_logger_level_file"].value
+if settings then
+    Logger.LOG_LEVEL_CONSOLE = settings.startup["DedLib_logger_level_console"].value
+    Logger.LOG_LEVEL_FILE = settings.startup["DedLib_logger_level_file"].value
+else
+    -- We're in the settings phase, so just stick with the defaults, people can override if they want
+    Logger.LOG_LEVEL_CONSOLE = "off"
+    Logger.LOG_LEVEL_FILE = "error"
+end
 
 Logger.ALL_LOG_LEVELS = { "off", "fatal", "error", "warn", "info", "debug", "trace" }
 
