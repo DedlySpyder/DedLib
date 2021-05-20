@@ -9,6 +9,17 @@ else
     Logger.LOG_LEVEL_FILE = "error"
 end
 
+local function get_mod_name(modName)
+    if modName then
+        return modName
+    elseif script then
+        return script.mod_name
+    else
+        return "Data"
+    end
+end
+
+
 Logger.ALL_LOG_LEVELS = { "off", "fatal", "error", "warn", "info", "debug", "trace" }
 
 function Logger.get_level_value(level)
@@ -27,17 +38,6 @@ function Logger.get_level_value(level)
     end
     return 0 -- Below off
 end
-
-local get_mod_name = function(modName)
-    if modName then
-        return modName
-    elseif script then
-        return script.mod_name
-    else
-        return "Data"
-    end
-end
-
 
 
 -- Log writing functions
@@ -91,6 +91,25 @@ function Logger._get_tick_in_game(count)
     return "[" .. game.tick .. count .. "]"
 end
 
+function Logger._stringify(arg, serpentFunc)
+    local argType = type(arg)
+    if argType == "string" then
+        return arg
+    elseif argType == "table" then
+        return serpentFunc(arg)
+    else
+        return tostring(arg)
+    end
+end
+
+function Logger._stringify_args(args, serpentFunc)
+    for i=1, args["n"] do
+        args[i] = Logger._stringify(args[i], serpentFunc)
+    end
+    return args
+end
+
+
 --TODO docs
 -- prefix
 -- modName
@@ -100,28 +119,29 @@ end
 
 --TODO uses
 -- log levels
+-- [log]_block methods
 -- _LOG_LEVEL if you want to act on a certain level
-function Logger.create(args)
-    if not args then
-        args = {}
+function Logger.create(loggerArgs)
+    if not loggerArgs then
+        loggerArgs = {}
     end
-    if type(args) == "string" then
-        args = { prefix = args }
+    if type(loggerArgs) == "string" then
+        loggerArgs = { prefix = loggerArgs }
     end
-    local modName = get_mod_name(args.modName)
+    local modName = get_mod_name(loggerArgs.modName)
 
-    local consoleLogLevel = args.consoleLevelOverride or args.levelOverride or Logger.LOG_LEVEL_CONSOLE
+    local consoleLogLevel = loggerArgs.consoleLevelOverride or loggerArgs.levelOverride or Logger.LOG_LEVEL_CONSOLE
     local consoleConfiguredLogLevel = Logger.get_level_value(consoleLogLevel)
-    local fileLogLevel = args.fileLevelOverride or args.levelOverride or Logger.LOG_LEVEL_FILE
+    local fileLogLevel = loggerArgs.fileLevelOverride or loggerArgs.levelOverride or Logger.LOG_LEVEL_FILE
     local fileConfiguredLogLevel = Logger.get_level_value(fileLogLevel)
 
     local prefix = ""
-    if args.prefix then
-        prefix = "[" .. args.prefix .. "]"
+    if loggerArgs.prefix then
+        prefix = "[" .. loggerArgs.prefix .. "]"
     end
 
     local l = {}
-    local stub = function() end
+    local function stub() end
 
     if consoleConfiguredLogLevel > fileConfiguredLogLevel then
         l._LOG_LEVEL = consoleLogLevel
@@ -145,27 +165,20 @@ function Logger.create(args)
         return l
     end
 
-    function l._format_message(message, level, blockPrint, count)
-        local mType = type(message)
-        if mType == "table" then
-            if blockPrint then
-                message = serpent.block(message)
-            else
-                message = serpent.line(message)
-            end
-        elseif mType ~= "string" then
-            message = tostring(message)
+    function l._format_message(format, formatArgs, level, count)
+        if formatArgs.n > 0 then
+            return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. string.format(format, unpack(formatArgs))
+        else
+            return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. format
         end
-
-        return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. message
     end
 
-    -- TODO - performance? - Can change this to use a formatted string and serpent/tostring the values to add to it to not have the downstream mod do it when unneeded
-    function l._log(logFunc, message, level, blockPrint)
-        local formatted = l._format_message(message, level, blockPrint)
+    -- All args are assumed non-nil
+    function l._log(logFunc, format, formatArgs, level)
+        local formatted = l._format_message(format, formatArgs, level)
         if formatted == l._LAST_MESSAGE then
             l._SAME_MESSAGE_COUNT = l._SAME_MESSAGE_COUNT + 1
-            formatted = l._format_message(message, level, blockPrint, l._SAME_MESSAGE_COUNT)
+            formatted = l._format_message(format, formatArgs, level, l._SAME_MESSAGE_COUNT)
         else
             l._SAME_MESSAGE_COUNT = 0
             l._LAST_MESSAGE = formatted
@@ -173,7 +186,15 @@ function Logger.create(args)
         logFunc(formatted)
     end
 
-    local insert_method = function(level)
+    function l._generate_log_func(upperLevel, logFunc, serpentFunc)
+        return function(format, ...)
+            local formatArgs = Logger._stringify_args(table.pack(...), serpentFunc)
+            format = Logger._stringify(format, serpentFunc)
+            l._log(logFunc, format, formatArgs, upperLevel)
+        end
+    end
+
+    local function insert_method(level, blockPrint)
         local levelValue = Logger.get_level_value(level)
         local upperLevel = string.upper(level)
 
@@ -192,17 +213,28 @@ function Logger.create(args)
             return
         end
 
-        l[level] = function(m, blockPrint)
-            l._log(logFunc, m, upperLevel, blockPrint)
+        local blockFunc = serpent.block
+        local lineFunc = serpent.line
+        if blockPrint then
+            l[level .. "_block"] = l._generate_log_func(upperLevel, logFunc, blockFunc)
+        else
+            l[level] = l._generate_log_func(upperLevel, logFunc, lineFunc)
         end
     end
 
+    -- Create all the `.[level]` and `.[level]_block` methods on the logger
     insert_method("fatal")
     insert_method("error")
     insert_method("warn")
     insert_method("info")
     insert_method("debug")
     insert_method("trace")
+    insert_method("fatal", true)
+    insert_method("error", true)
+    insert_method("warn", true)
+    insert_method("info", true)
+    insert_method("debug", true)
+    insert_method("trace", true)
 
     return l
 end

@@ -1,8 +1,6 @@
 local Logger = require("modules/logger")
 local Tester = require("modules/tester")
 
-local t_log = Logger.create{ modName = "TEST"} -- TODO - delete if still unused when done
-
 local LoggerTests = {}
 
 
@@ -65,54 +63,67 @@ function LoggerTests.test_get_tick_in_game_with_count()
 end
 
 
--- Format message tests
+-- Stringify & Stringify Args tests
+function LoggerTests.test_stringify_int()
+    local test = 42
+    local actual = Logger._stringify(test)
+    local expected = "42"
+
+    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
+function LoggerTests.test_stringify_double()
+    local test = 2.005
+    local actual = Logger._stringify(test)
+    local expected = "2.005"
+
+    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
+function LoggerTests.test_stringify_string()
+    local test = "valid_string"
+    local actual = Logger._stringify(test)
+    local expected = "valid_string"
+
+    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
+function LoggerTests.test_stringify_table()
+    local test = { foo = "bar" }
+    local actual = Logger._stringify(test, serpent.line)
+    local expected = '{foo = "bar"}'
+
+    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
+
+-- Format message tests -- no format string usage
 local formatMessageLogger = Logger.create{modName = "ModName", prefix = "Prefix"}
 function LoggerTests.test_format_message_with_count()
     local message = ""
-    local actual = formatMessageLogger._format_message(message, "LEVEL", false, "foo")
+    local formatArgs = { n = 0}
+    local actual = formatMessageLogger._format_message(message, formatArgs, "LEVEL", "foo")
     local expected = "[" .. game.tick .. "-foo][ModName][Prefix] LEVEL - " .. message
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(message))
+    Tester.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
 end
 
 function LoggerTests.test_format_message_string()
     local message = "string_message"
-    local actual = formatMessageLogger._format_message(message, "LEVEL", false, nil)
+    local formatArgs = { n = 0}
+    local actual = formatMessageLogger._format_message(message, formatArgs, "LEVEL", nil)
     local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. message
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(message))
+    Tester.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
 end
 
-function LoggerTests.test_format_message_number()
-    local message = 42
-    local actual = formatMessageLogger._format_message(message, "LEVEL", false, nil)
-    local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. message
+function LoggerTests.test_format_string_format_args()
+    local message = "foo_%s"
+    local formatArgs = {n = 1, "bar"}
+    local actual = formatMessageLogger._format_message(message, formatArgs, "LEVEL", nil)
+    local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - foo_bar"
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(message))
-end
-
-function LoggerTests.test_format_message_nil()
-    local message = nil
-    local actual = formatMessageLogger._format_message(message, "LEVEL", false, nil)
-    local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. tostring(message)
-
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(message))
-end
-
-function LoggerTests.test_format_message_table()
-    local message = {foo = "bar"}
-    local actual = formatMessageLogger._format_message(message, "LEVEL", false, nil)
-    local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. serpent.line(message)
-
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(message))
-end
-
-function LoggerTests.test_format_message_table_block()
-    local message = {foo = "bar"}
-    local actual = formatMessageLogger._format_message(message, "LEVEL", true, nil)
-    local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. serpent.block(message)
-
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(message))
+    Tester.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
 end
 
 
@@ -126,10 +137,11 @@ end
 function LoggerTests.test__log_last_message()
     resetLogLogger()
     local message = "message"
+    local formatArgs = { n = 0}
 
     local actualMessage
     local logFunc = function(m) actualMessage = m end
-    logLogger._log(logFunc, message, "LEVEL")
+    logLogger._log(logFunc, message, formatArgs, "LEVEL")
     local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. message
 
     Tester.assert_equals(expected, logLogger._LAST_MESSAGE, "Input failed: " .. serpent.line(message))
@@ -138,25 +150,27 @@ end
 function LoggerTests.test__log_same_message_count()
     resetLogLogger()
     local message = "message"
+    local formatArgs = { n = 0}
 
     local actualMessage
     local logFunc = function(m) actualMessage = m end
-    logLogger._log(logFunc, message, "LEVEL")
+    logLogger._log(logFunc, message, formatArgs, "LEVEL")
     Tester.assert_equals(0, logLogger._SAME_MESSAGE_COUNT, "Input failed: " .. serpent.line(message))
-    logLogger._log(logFunc, message, "LEVEL")
+    logLogger._log(logFunc, message, formatArgs, "LEVEL")
     Tester.assert_equals(1, logLogger._SAME_MESSAGE_COUNT, "Input failed: " .. serpent.line(message))
 end
 
 function LoggerTests.test__log_duplicate_messages()
     resetLogLogger()
     local message = "dup_message"
+    local formatArgs = { n = 0}
 
     local actualMessage
     local logFunc = function(m) actualMessage = m end
-    logLogger._log(logFunc, message, "LEVEL")
+    logLogger._log(logFunc, message, formatArgs, "LEVEL")
     local expected1 = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. message
     Tester.assert_equals(expected1, actualMessage, "Input failed: " .. serpent.line(message))
-    logLogger._log(logFunc, message, "LEVEL")
+    logLogger._log(logFunc, message, formatArgs, "LEVEL")
     local expected2 = "[" .. game.tick .. "-1][ModName][Prefix] LEVEL - " .. message
     Tester.assert_equals(expected2, actualMessage, "Input failed: " .. serpent.line(message))
 end
@@ -165,7 +179,7 @@ end
 -- Log level tests -- fully on
 local fullyOnLogger = Logger.create({ modName = "ModName", prefix = "Prefix", levelOverride = Logger.ALL_LOG_LEVELS[#Logger.ALL_LOG_LEVELS]})
 local fullyOnLoggerUpperLevel
-fullyOnLogger._log = function(logFunc, m, upperLevel, blockPrint) fullyOnLoggerUpperLevel = upperLevel end
+fullyOnLogger._log = function(_, _, _, upperLevel) fullyOnLoggerUpperLevel = upperLevel end
 
 function LoggerTests.test_log_level_fully_on_fatal()
     fullyOnLoggerUpperLevel = nil
@@ -207,7 +221,7 @@ end
 -- Log level tests -- fully off
 local fullyOffLogger = Logger.create({ modName = "ModName", prefix = "Prefix", levelOverride = Logger.ALL_LOG_LEVELS[1]})
 local fullyOffLoggerUpperLevel
-fullyOffLogger._log = function(logFunc, m, upperLevel, blockPrint) fullyOffLoggerUpperLevel = upperLevel end
+fullyOffLogger._log = function(_, _, _, upperLevel) fullyOffLoggerUpperLevel = upperLevel end
 
 function LoggerTests.test_log_level_fully_off_fatal()
     fullyOffLoggerUpperLevel = nil
