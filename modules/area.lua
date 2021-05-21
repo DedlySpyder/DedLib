@@ -48,13 +48,17 @@ function Area.standardize_bounding_box(bounding_box)
         Logger.error("Failed to standardize bounding_box, invalid table(s) (expected {{x,y},{a,b}}): " .. serpent.line(bounding_box))
         return
     end
-    local standardized = {
-        left_top = Position.standardize(bounding_box[1]), --TODO - BUG - this could still return junk if one of these can't be standardized
-        right_bottom = Position.standardize(bounding_box[2])
-    }
-    Logger.trace("Bounding_box standardized:")
-    Logger.trace(standardized)
-    return standardized
+
+    local lt = Position.standardize(bounding_box[1])
+    local rb = Position.standardize(bounding_box[2])
+    if lt and rb then
+        local standardized = {
+            left_top = Position.standardize(bounding_box[1]),
+            right_bottom = Position.standardize(bounding_box[2])
+        }
+        Logger.trace("Bounding_box standardized: %s", standardized)
+        return standardized
+    end
 end
 
 function Area.get_bounding_box_vertices(bounding_box)

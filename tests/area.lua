@@ -85,6 +85,22 @@ function AreaTests.test_standardize_bounding_box_pos_2_not_table()
     Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
+function AreaTests.test_standardize_bounding_box_pos_1_not_position()
+    local test = {{1}, {3,4}}
+    local actual = Area.standardize_bounding_box(test)
+    local expected = nil
+
+    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
+function AreaTests.test_standardize_bounding_box_pos_2_not_position()
+    local test = {{1,2}, {3}}
+    local actual = Area.standardize_bounding_box(test)
+    local expected = nil
+
+    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
 function AreaTests.test_standardize_bounding_box_good()
     local test = {{1,2}, {3,4}}
     local actual = Area.standardize_bounding_box(test)
