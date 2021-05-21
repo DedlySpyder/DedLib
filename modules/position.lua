@@ -3,7 +3,7 @@ local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib", p
 local Position = {}
 
 
-function Position.standardize(position)
+function Position.standardize(position) --TODO this moved from Area.standardize_position
     Logger.trace("Attempting to standardize position: %s", position)
     if position == nil or type(position) ~= "table" then
         Logger.error("Failed to standardize invalid position: %s", position)
@@ -24,7 +24,7 @@ function Position.standardize(position)
     return standardized
 end
 
-function Position.is_equal(p1, p2)
+function Position.compare(p1, p2) -- TODO tests
     Logger.trace("Comparing 2 positions: <%s> <%s>", p1, p2)
     p1 = Position.standardize(p1)
     p2 = Position.standardize(p2)

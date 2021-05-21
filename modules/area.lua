@@ -1,7 +1,7 @@
 local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib", prefix = "Area"}
 local Position = require("__DedLib__/modules/position")
 
-local Area = {} -- TODO -- tests
+local Area = {} -- TODO -- docs
 
 function Area.area_of_entity(entity)
     Logger.trace("Finding area of an entity")
@@ -49,12 +49,29 @@ function Area.standardize_bounding_box(bounding_box)
         return
     end
     local standardized = {
-        left_top = Position.standardize(bounding_box[1]),
+        left_top = Position.standardize(bounding_box[1]), --TODO - BUG - this could still return junk if one of these can't be standardized
         right_bottom = Position.standardize(bounding_box[2])
     }
     Logger.trace("Bounding_box standardized:")
     Logger.trace(standardized)
     return standardized
+end
+
+function Area.get_bounding_box_vertices(bounding_box) -- TODO tests
+    Logger.trace("Attempting to get vertices of bounding box: %s", bounding_box)
+    bounding_box = Area.standardize_bounding_box(bounding_box)
+    if bounding_box then
+        local leftTop = bounding_box.left_top
+        local rightBottom = bounding_box.right_bottom
+        local vertices = {
+            left_top = leftTop,
+            right_bottom = rightBottom,
+            left_bottom = {x = leftTop.x, y = rightBottom.y},
+            right_top = {x = rightBottom.x, y = leftTop.y}
+        }
+        Logger.trace("Vertices calculated: %s", vertices)
+        return
+    end
 end
 
 function Area.get_chunk_position_from_position(position)
