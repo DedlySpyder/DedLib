@@ -57,7 +57,7 @@ function Area.standardize_bounding_box(bounding_box)
     return standardized
 end
 
-function Area.get_bounding_box_vertices(bounding_box) -- TODO tests
+function Area.get_bounding_box_vertices(bounding_box)
     Logger.trace("Attempting to get vertices of bounding box: %s", bounding_box)
     bounding_box = Area.standardize_bounding_box(bounding_box)
     if bounding_box then
@@ -70,7 +70,7 @@ function Area.get_bounding_box_vertices(bounding_box) -- TODO tests
             right_top = {x = rightBottom.x, y = leftTop.y}
         }
         Logger.trace("Vertices calculated: %s", vertices)
-        return
+        return vertices
     end
 end
 

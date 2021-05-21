@@ -1,4 +1,3 @@
-local Logger = require("modules/logger").create("Area Test")
 local Tester = require("modules/tester")
 
 local Area = require("modules/area")
@@ -92,6 +91,28 @@ function AreaTests.test_standardize_bounding_box_good()
     local expected = {left_top = {x=1, y=2}, right_bottom = {x=3, y=4}}
 
     Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+end
+
+
+-- Get vertices of a bounding box tests
+function AreaTests.test_get_bounding_box_vertices()
+    local test = {{1,2}, {3,4}}
+    local result = Area.get_bounding_box_vertices(test)
+    local expectedLt = {x = 1, y = 2}
+    local expectedRb = {x = 3, y = 4}
+    local expectedLb = {x = 1, y = 4}
+    local expectedRt = {x = 3, y = 2}
+
+    Tester.assert_equals(expectedLt, result.left_top, "Input failed for left_top: " .. serpent.line(test))
+    Tester.assert_equals(expectedRb, result.right_bottom, "Input failed for right_bottom: " .. serpent.line(test))
+    Tester.assert_equals(expectedLb, result.left_bottom, "Input failed for left_bottom: " .. serpent.line(test))
+    Tester.assert_equals(expectedRt, result.right_top, "Input failed for right_top: " .. serpent.line(test))
+end
+
+function AreaTests.test_get_bounding_box_vertices_invalid_input()
+    local test = {{1,2}}
+    local result = Area.get_bounding_box_vertices(test)
+    Tester.assert_equals(nil, result, "Input failed for invalid: " .. serpent.line(test))
 end
 
 
