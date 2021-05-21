@@ -70,4 +70,56 @@ function PositionTests.test_standardize_position_good()
 end
 
 
+-- Position compare tests
+function PositionTests.test_compare_is_equals()
+    local test1 = {1,2}
+    local test2 = {1,2}
+    local actual = Position.compare(test1, test2)
+
+    assert(actual,
+            string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
+    )
+end
+
+function PositionTests.test_compare_x_equal()
+    local test1 = {1,2}
+    local test2 = {1,3}
+    local actual = Position.compare(test1, test2)
+
+    assert(not actual,
+            string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
+    )
+end
+
+function PositionTests.test_compare_y_equal()
+    local test1 = {1,2}
+    local test2 = {3,2}
+    local actual = Position.compare(test1, test2)
+
+    assert(not actual,
+            string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
+    )
+end
+
+function PositionTests.test_compare_swap_coords()
+    local test1 = {1,2}
+    local test2 = {2,1}
+    local actual = Position.compare(test1, test2)
+
+    assert(not actual,
+            string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
+    )
+end
+
+function PositionTests.test_compare_swap_different_numbers()
+    local test1 = {1,2}
+    local test2 = {3,4}
+    local actual = Position.compare(test1, test2)
+
+    assert(not actual,
+            string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
+    )
+end
+
+
 return PositionTests

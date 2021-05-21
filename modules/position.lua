@@ -24,7 +24,7 @@ function Position.standardize(position) --TODO this moved from Area.standardize_
     return standardized
 end
 
-function Position.compare(p1, p2) -- TODO tests
+function Position.compare(p1, p2)
     Logger.trace("Comparing 2 positions: <%s> <%s>", p1, p2)
     p1 = Position.standardize(p1)
     p2 = Position.standardize(p2)
