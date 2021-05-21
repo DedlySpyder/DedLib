@@ -3,6 +3,7 @@ local Logger = {}
 if settings then
     Logger.LOG_LEVEL_CONSOLE = settings.startup["DedLib_logger_level_console"].value
     Logger.LOG_LEVEL_FILE = settings.startup["DedLib_logger_level_file"].value
+    if Logger.LOG_LEVEL_FILE == "off" then Logger.LOG_LEVEL_FILE = "fatal" end -- Choice is an illusion
 else
     -- We're in the settings phase, so just stick with the defaults, people can override if they want
     Logger.LOG_LEVEL_CONSOLE = "off"
@@ -116,6 +117,7 @@ end
 -- levelOverride
 -- consoleLevelOverride
 -- fileLevelOverride
+-- Note about off file logging being a lie
 
 --TODO uses
 -- log levels
