@@ -91,9 +91,9 @@ function Tester.get_mock_valid_entity(values)
 end
 
 function Tester.create_basic_test(testingFunc, expectedValue, ...)
-    local testArgs = ...
+    local testArgs = table.pack(...)
     return function()
-        local actual = testingFunc(testArgs)
+        local actual = testingFunc(unpack(testArgs))
         Tester.assert_equals(expectedValue, actual, "Input failed for arg: " .. serpent.line(testArg))
     end
 end
