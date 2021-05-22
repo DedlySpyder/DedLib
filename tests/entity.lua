@@ -1,13 +1,13 @@
-local Logger = require("modules/logger").create("Entity Test")
 local Tester = require("modules/tester")
 
+local Area = require("modules/area")
 local Entity = require("modules/entity")
 
 local EntityTests = {}
 
 
--- Entity.area_of_entity(entity) tests
-local areaOfEntityTests = {
+-- Entity.area_of_bounding_box tests
+local areaOfBoundingBoxTests = {
     -- Both negative
     -- 1x1
     {bb = {{-10, -10}, {-9, -9}}, size = 1},
@@ -92,15 +92,61 @@ local areaOfEntityTests = {
     {bb = {{-0.6, -0.6}, {-0.2, 0.4}}, size = 2},
 }
 
-for _, data in ipairs(areaOfEntityTests) do
+for _, data in ipairs(areaOfBoundingBoxTests) do
     local bb = data["bb"]
     local size = data["size"]
     local name = "test_area_of_entity__lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2] .. "__expected_" .. size
 
-    EntityTests[name] = Tester.create_basic_test({
-        valid = true,
-        bounding_box = bb
-    }, size, Entity.area_of)
+    EntityTests[name] = Tester.create_basic_test(bb, size, Entity.area_of_bounding_box)
+end
+
+
+-- Entity.area_of_bounding_box_lt_rb tests
+function EntityTests.test_area_of_bounding_box_lt_rb()
+    local test1 = {1,1}
+    local test2 = {4,4}
+    local actual = Entity.area_of_bounding_box_lt_rb(test1, test2)
+    local expected = 9
+
+    Tester.assert_equals(expected, actual,
+            string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
+    )
+end
+
+function EntityTests.test_area_of_bounding_box_lt_rb_invalid()
+    local test1 = {1,2}
+    local test2 = nil
+    local actual = Entity.area_of_bounding_box_lt_rb(test1, test2)
+
+    Tester.assert_equals(nil, actual,
+            string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
+    )
+end
+
+
+-- Entity.area_of_by_chunks tests -- TODO
+
+
+-- Entity.chunks_of
+local chunksOfEntityTests = {
+    -- Single chunk
+    {bb = {{1,1}, {2,2}}, chunks = {{x=0, y=0}}},
+
+    -- 2 Chunks
+    {bb = {{-1,-3}, {1,-1}}, chunks = {{x=-1, y=-1},{x=0, y=-1}}}, -- Vertical Split
+    {bb = {{1,-1}, {3,1}}, chunks = {{x=0, y=-1},{x=0, y=0}}}, -- Horizontal Split
+
+    -- 4 Chunks
+    {bb = {{-1,-1}, {1,1}}, chunks = {{x=-1, y=-1},{x=0, y=0},{x=-1, y=0},{x=0, y=-1}}},
+}
+
+for _, data in ipairs(chunksOfEntityTests) do
+    local bb = data["bb"]
+    local name = "test_chunks_of__lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2]
+    local entity = Tester.get_mock_valid_entity({bounding_box = Area.standardize_bounding_box(bb), name = name})
+    local chunks = data["chunks"]
+
+    EntityTests[name] = Tester.create_basic_test(entity, chunks, Entity.chunks_of)
 end
 
 

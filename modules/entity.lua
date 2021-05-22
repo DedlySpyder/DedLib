@@ -8,7 +8,7 @@ function Entity.is_valid(entity) --TODO - performance? - cacheable (unit num + t
     return entity and entity.valid
 end
 
-function Entity.area_of(entity) -- TODO - moved from Area
+function Entity.area_of(entity) -- TODO - moved from Area.area_of_entity
     Logger.trace("Finding area of entity")
     if Entity.is_valid(entity) then
         return Entity.area_of_bounding_box(entity.bounding_box)
@@ -17,7 +17,7 @@ function Entity.area_of(entity) -- TODO - moved from Area
     end
 end
 
-function Entity.area_of_bounding_box(bb) -- TODO tests (steal the area_of ones for this, it doesn't need tests anymore)
+function Entity.area_of_bounding_box(bb)
     Logger.trace("Finding area of bounding box: %s", bb)
     bb = Area.standardize_bounding_box(bb)
     if bb then
@@ -29,7 +29,7 @@ function Entity.area_of_bounding_box(bb) -- TODO tests (steal the area_of ones f
     end
 end
 
-function Entity.area_of_bounding_box_lt_rb(left_top, right_bottom) -- TODO tests
+function Entity.area_of_bounding_box_lt_rb(left_top, right_bottom)
     return Entity.area_of_bounding_box({
         left_top = left_top,
         right_bottom = right_bottom
