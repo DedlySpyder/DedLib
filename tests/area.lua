@@ -151,7 +151,7 @@ for _, data in ipairs(chunkPositionFromPositionTests) do
     local expected = data["expected"]
     local name = "test_get_chunk_position__x_" .. test[1] .. "_y_" .. test[2] .. "__expected_" .. serpent.line(expected)
 
-    AreaTests[name] = Tester.create_basic_test(test, expected, Area.get_chunk_position_from_position)
+    AreaTests[name] = Tester.create_basic_test(Area.get_chunk_position_from_position, expected, test)
 end
 
 
@@ -168,7 +168,7 @@ for _, data in ipairs(chunkAreaFromChunkPositionTests) do
     local expected = data["expected"]
     local name = "test_get_chunk_area_from_chunk_position__x_" .. test[1] .. "_y_" .. test[2] .. "__expected_" .. serpent.line(expected)
 
-    AreaTests[name] = Tester.create_basic_test(test, expected, Area.get_chunk_area_from_chunk_position)
+    AreaTests[name] = Tester.create_basic_test(Area.get_chunk_area_from_chunk_position, expected, test)
 end
 
 

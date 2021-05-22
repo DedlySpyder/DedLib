@@ -97,7 +97,7 @@ for _, data in ipairs(areaOfBoundingBoxTests) do
     local size = data["size"]
     local name = "test_area_of_entity__lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2] .. "__expected_" .. size
 
-    EntityTests[name] = Tester.create_basic_test(bb, size, Entity.area_of_bounding_box)
+    EntityTests[name] = Tester.create_basic_test(Entity.area_of_bounding_box, size, bb)
 end
 
 
@@ -146,7 +146,7 @@ for _, data in ipairs(chunksOfEntityTests) do
     local entity = Tester.get_mock_valid_entity({bounding_box = Area.standardize_bounding_box(bb), name = name})
     local chunks = data["chunks"]
 
-    EntityTests[name] = Tester.create_basic_test(entity, chunks, Entity.chunks_of)
+    EntityTests[name] = Tester.create_basic_test(Entity.chunks_of, chunks, entity)
 end
 
 
