@@ -2,7 +2,6 @@ local Tester = require("modules/tester")
 
 local Area = require("modules/area")
 local Entity = require("modules/entity")
-local Position = require("modules/position")
 
 local EntityTests = {}
 

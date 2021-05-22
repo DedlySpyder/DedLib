@@ -20,7 +20,7 @@ Tester.reset()
 function Tester.add_test(func, name)
     if type(func) == "function" then
         if not name then name = "Single Test #" .. #Tester._TESTERS end
-        Logger.debug("Adding single test " .. name)
+        Logger.debug("Adding single test %s", name)
         table.insert(Tester._TESTERS, {name = name, tests = {[name] = func}})
         return true
     else
@@ -39,7 +39,9 @@ function Tester.add_tests(tests, testerName)
     if type(tests) == "table" then
         local tester = {}
         tester["name"] = testerName or "Unnamed Tester #" .. #Tester._TESTERS
-        Logger.debug("Creating tester for " .. tester["name"])
+
+        local testerName = tester["name"]
+        Logger.debug("Creating tester for %s", testerName)
         tester["tests"] = {}
         for name, func in pairs(tests) do
             if type(name) == "number" then name = "Test #" .. name end
@@ -50,11 +52,11 @@ function Tester.add_tests(tests, testerName)
                 Logger.debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
             end
         end
-        Logger.debug("Done adding tests to " .. tester["name"])
+        Logger.debug("Done adding tests to %s", testerName)
         if table_size(tester["tests"]) then
             table.insert(Tester._TESTERS, tester)
         else
-            Logger.warn("No tests for " .. tester["name"] .. ' found. Did the test functions names contain the word "test"?')
+            Logger.warn('No tests for %s found. Did the test functions names contain the word "test"?', testerName)
         end
     else
         Logger.error('Failed to add new tests, variable needs to be a table of "test_name" -> test_function')
@@ -102,30 +104,30 @@ function Tester.run()
     Logger.trace("Running all tests")
     for _, tester in ipairs(Tester._TESTERS) do
         local testerName = tester["name"]
-        Logger.debug("Running tester " .. testerName)
+        Logger.debug("Running tester %s", testerName)
 
         local i = 0
         while Tester._FAILED_TESTS[testerName] do
-            Logger.warn("Tester named " .. testerName .. " already exists, incrementing to make unique")
+            Logger.warn("Tester named %s already exists, incrementing to make unique", testerName)
             testerName = tester["name"] .. "-" .. i
             i = i + 1
         end
         Tester._FAILED_TESTS[testerName] = {}
 
         for name, func in pairs(tester["tests"]) do
-            Logger.debug("Running test " .. name)
+            Logger.debug("Running test %s", name)
             local status, error = pcall(func)
             if status then
-                Logger.info("Test " .. name .." succeeded")
+                Logger.info("Test %s succeeded", name)
                 Tester._COUNTS["success"] = Tester._COUNTS["success"] + 1
             else
                 if error and error["message"] and error["stacktrace"] then
                     local message = tostring(error["message"])
-                    Logger.error("Test " .. name .." failed: " .. message)
+                    Logger.error("Test %s failed: %s", name, message)
                     table.insert(Tester._FAILED_TESTS[testerName], {name = name, error = message, stack = error["stacktrace"]})
                 else
                     error = tostring(error)
-                    Logger.error("Test " .. name .." failed: " .. error)
+                    Logger.error("Test %s failed: %s", name, error)
                     table.insert(Tester._FAILED_TESTS[testerName], {name = name, error = error, stack = debug.traceback()})
                 end
                 Tester._COUNTS["failed"] = Tester._COUNTS["failed"] + 1
@@ -145,8 +147,8 @@ end
 function Tester._report_failed()
     Logger.info("")
     Logger.info("Finished running tests:")
-    Logger.info("    " .. Tester._COUNTS["success"] .. " succeeded")
-    Logger.info("    " .. Tester._COUNTS["failed"] .. " failed")
+    Logger.info("    %d succeeded", Tester._COUNTS["success"])
+    Logger.info("    %d failed", Tester._COUNTS["failed"])
 
     if Logger.level_is_less_than("debug") then
         Logger.info("")
@@ -156,11 +158,11 @@ function Tester._report_failed()
     for testerName, failedTests in pairs(Tester._FAILED_TESTS) do
         if #failedTests > 0 then
             Logger.info("")
-            Logger.info(#failedTests .. " failed tests for " .. testerName)
+            Logger.info("%d failed tests for %s", #failedTests, testerName)
         end
         for _, test in ipairs(failedTests) do
             Logger.info("")
-            Logger.info(test["name"] .. " failed: " .. test["error"])
+            Logger.info("%s failed: %s", test["name"], test["error"])
             Logger.debug(test["stack"])
         end
     end

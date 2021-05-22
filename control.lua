@@ -11,6 +11,6 @@ if settings.startup["DedLib_run_tests"].value then
     Logger.trace("Attempting to run tests")
     local status, err = pcall(run_tests)
     if not status then
-        Logger.error("Failed to run tests: " .. serpent.line(err))
+        Logger.error("Failed to run tests: %s", err)
     end
 end

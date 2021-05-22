@@ -8,8 +8,7 @@ function Area.area_of_entity(entity)
     if entity and entity.valid and entity.bounding_box then
         local bb = Area.standardize_bounding_box(entity.bounding_box)
         local area = (math.ceil(bb.right_bottom.x) - math.floor(bb.left_top.x)) * (math.ceil(bb.right_bottom.y) - math.floor(bb.left_top.y))
-        Logger.trace("Area of entity is " .. area)
-        Logger.trace(bb)
+        Logger.trace("Area of entity is %s with bounding box: %s", area, bb)
         return area
     else
         Logger.error("Entity is nil, invalid, or missing bounding_box")
@@ -17,10 +16,9 @@ function Area.area_of_entity(entity)
 end
 
 function Area.standardize_bounding_box(bounding_box)
-    Logger.trace("Attempting to standardize bounding_box:")
-    Logger.trace(bounding_box)
+    Logger.trace("Attempting to standardize bounding_box: %s", bounding_box)
     if bounding_box == nil or type(bounding_box) ~= "table" then
-        Logger.error("Failed to standardize invalid bounding_box: " .. serpent.line(bounding_box))
+        Logger.error("Failed to standardize invalid bounding_box: %s", bounding_box)
         return
     end
 
@@ -37,15 +35,14 @@ function Area.standardize_bounding_box(bounding_box)
                 return bounding_box
             else
                 local standardized = {left_top = lf, right_bottom = rb}
-                Logger.trace("Bounding_box standardized:")
-                Logger.trace(standardized)
+                Logger.trace("Bounding_box standardized: %s", standardized)
                 return standardized
             end
         end
     end
 
     if #bounding_box ~= 2 or type(bounding_box[1]) ~= "table" or type(bounding_box[2]) ~= "table" then
-        Logger.error("Failed to standardize bounding_box, invalid table(s) (expected {{x,y},{a,b}}): " .. serpent.line(bounding_box))
+        Logger.error("Failed to standardize bounding_box, invalid table(s) (expected {{x,y},{a,b}}): %s", bounding_box)
         return
     end
 
@@ -79,26 +76,22 @@ function Area.get_bounding_box_vertices(bounding_box)
 end
 
 function Area.get_chunk_position_from_position(position)
-    Logger.trace("Attempting to get chunk position from normal position:")
-    Logger.trace(position)
+    Logger.trace("Attempting to get chunk position from normal position: %s", position)
     position = Position.standardize(position)
     if position then
         local chunkPosition = { x = math.floor(position.x / 32), y = math.floor(position.y / 32)}
-        Logger.trace("Chunk position:")
-        Logger.trace(chunkPosition)
+        Logger.trace("Chunk position: %s", chunkPosition)
         return chunkPosition
     end
 end
 
 function Area.get_chunk_area_from_position(position)
-    Logger.trace("Attempting to get chunk area from normal position:")
-    Logger.trace(position)
+    Logger.trace("Attempting to get chunk area from normal position: %s", position)
     return Area.get_chunk_area_from_chunk_position(Area.get_chunk_position_from_position(position))
 end
 
 function Area.get_chunk_area_from_chunk_position(chunkPosition)
-    Logger.trace("Attempting to get chunk area from chunk position:")
-    Logger.trace(chunkPosition)
+    Logger.trace("Attempting to get chunk area from chunk position: %s", chunkPosition)
     chunkPosition = Position.standardize(chunkPosition)
     if chunkPosition then
         local area = {
@@ -111,8 +104,7 @@ function Area.get_chunk_area_from_chunk_position(chunkPosition)
                 y = (chunkPosition.y + 1) * 32
             }
         }
-        Logger.trace("Chunk area:")
-        Logger.trace(area)
+        Logger.trace("Chunk area: %s", area)
         return area
     end
 end
