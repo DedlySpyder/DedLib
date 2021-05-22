@@ -37,107 +37,112 @@ function Entity.area_of_bounding_box_lt_rb(left_top, right_bottom)
 end
 
 -- See `docs/entity_area_by_chunks.png` (on GitHub, not packaged in the mod) for examples on how this math makes sense
-function Entity.area_of_by_chunks(entity) -- TODO tests - big boi
+function Entity.area_of_by_chunks(entity)
     Logger.trace("Finding area of entity by chunks")
     if Entity.is_valid(entity) then
         local chunks, vertices = Entity.chunks_of(entity)
-        if #chunks == 0 then
-            return {}
+        return Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
+    end
+end
 
-        elseif #chunks == 1 then
-            -- Use normal area_of if there is only 1 chunk anyways
-            local areas = {{chunk = chunks[1], area = Entity.area_of(entity)}}
-            Logger.trace_block("Calculated areas of entity %s within 1 chunk: %s", entity.name, areas)
-            return areas
+function Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
+    Logger.trace("Finding area between vertices <%s> within %d chunks", vertices, #chunks)
+    if #chunks == 0 then
+        return {}
 
-        elseif #chunks == 2 then
-            local leftTopChunk, rightBottomChunk = chunks[1], chunks[2]
-            local areas = {}
-            if leftTopChunk.x < rightBottomChunk.x then
-                -- Vertical split
-                areas[1] {
-                    chunk = leftTopChunk,
-                    area = Entity.area_of_bounding_box_lt_rb(vertices.left_top, {
-                        x = Area.get_chunk_area_from_chunk_position(leftTopChunk).right_bottom.x,
-                        y = vertices.right_bottom.y
-                    })
-                }
-                areas[2] {
-                    chunk = rightBottomChunk,
-                    area = Entity.area_of_bounding_box_lt_rb({
-                        x = Area.get_chunk_area_from_chunk_position(rightBottomChunk).top_left.x,
-                        y = vertices.top_left.y
-                    }, vertices.right_bottom)
-                }
-            elseif leftTopChunk.y < rightBottomChunk.y then
-                -- Horizontal split
-                areas[1] {
-                    chunk = leftTopChunk,
-                    area = Entity.area_of_bounding_box_lt_rb(vertices.left_top, {
-                        x = vertices.right_bottom.x,
-                        y = Area.get_chunk_area_from_chunk_position(leftTopChunk).right_bottom.y
-                    })
-                }
-                areas[2] {
-                    chunk = rightBottomChunk,
-                    area = Entity.area_of_bounding_box_lt_rb({
-                        x = vertices.top_left.x,
-                        y = Area.get_chunk_area_from_chunk_position(rightBottomChunk).top_left.y
-                    }, vertices.right_bottom)
-                }
-            else
-                -- WTF??
-                Logger.fatal_block("Chunks for area_of_by_chunks calculation are unexpected: leftTopChunk <%s> rightBottomChunk <%s>",
-                        leftTopChunk,
-                        rightBottomChunk
-                )
-                error("Fatal assertion error in DedLib for area of entity by chunk calculation. Please report " ..
-                        "on the mod portal with factorio-current.log file")
-            end
+    elseif #chunks == 1 then
+        -- Use normal area_of if there is only 1 chunk anyways
+        local areas = {{chunk = chunks[1], area = Entity.area_of(entity)}}
+        Logger.trace_block("Calculated areas of entity %s within 1 chunk: %s", entity.name, areas)
+        return areas
 
-            Logger.trace_block("Calculated areas of entity %s within 2 chunks: %s", entity.name, areas)
-            return areas
-
-        else -- 4 Chunks
-            local leftTopChunk = chunks[1]
-            local centerPoint = Area.get_chunk_area_from_chunk_position(leftTopChunk).right_bottom
-            local areas = {
-                -- top_left
-                {
-                    chunk = leftTopChunk,
-                    area = Entity.area_of_bounding_box_lt_rb(vertices.left_top, centerPoint)
-                },
-                -- right_bottom
-                {
-                    chunk = chunks[2],
-                    area = Entity.area_of_bounding_box_lt_rb(centerPoint, vertices.right_bottom)
-                },
-                -- left_bottom
-                {
-                    chunk = chunks[3],
-                    area = Entity.area_of_bounding_box_lt_rb({
-                        x = vertices.left_bottom.x,
-                        y = centerPoint.y
-                    }, {
-                        x = centerPoint.x,
-                        y = vertices.left_bottom.y
-                    })
-                },
-                -- right_top
-                {
-                    chunk = chunks[4],
-                    area = Entity.area_of_bounding_box_lt_rb({
-                        x = centerPoint.x,
-                        y = vertices.right_top.y
-                    }, {
-                        x = vertices.right_top.x,
-                        y = centerPoint.y
-                    })
-                }
+    elseif #chunks == 2 then
+        local leftTopChunk, rightBottomChunk = chunks[1], chunks[2]
+        local areas = {}
+        if leftTopChunk.x < rightBottomChunk.x then
+            -- Vertical split
+            areas[1] = {
+                chunk = leftTopChunk,
+                area = Entity.area_of_bounding_box_lt_rb(vertices.left_top, {
+                    x = Area.get_chunk_area_from_chunk_position(leftTopChunk).right_bottom.x,
+                    y = vertices.right_bottom.y
+                })
             }
-            Logger.trace_block("Calculated areas of entity %s within 4 chunks: %s", entity.name, areas)
-            return areas
+            areas[2] = {
+                chunk = rightBottomChunk,
+                area = Entity.area_of_bounding_box_lt_rb({
+                    x = Area.get_chunk_area_from_chunk_position(rightBottomChunk).left_top.x,
+                    y = vertices.left_top.y
+                }, vertices.right_bottom)
+            }
+        elseif leftTopChunk.y < rightBottomChunk.y then
+            -- Horizontal split
+            areas[1] = {
+                chunk = leftTopChunk,
+                area = Entity.area_of_bounding_box_lt_rb(vertices.left_top, {
+                    x = vertices.right_bottom.x,
+                    y = Area.get_chunk_area_from_chunk_position(leftTopChunk).right_bottom.y
+                })
+            }
+            areas[2] = {
+                chunk = rightBottomChunk,
+                area = Entity.area_of_bounding_box_lt_rb({
+                    x = vertices.left_top.x,
+                    y = Area.get_chunk_area_from_chunk_position(rightBottomChunk).left_top.y
+                }, vertices.right_bottom)
+            }
+        else
+            -- WTF??
+            Logger.fatal_block("Chunks for area_of_by_chunks calculation are unexpected: leftTopChunk <%s> rightBottomChunk <%s>",
+                    leftTopChunk,
+                    rightBottomChunk
+            )
+            error("Fatal assertion error in DedLib for area of entity by chunk calculation. Please report " ..
+                    "on the mod portal with factorio-current.log file")
         end
+
+        Logger.trace_block("Calculated areas of entity %s within 2 chunks: %s", entity.name, areas)
+        return areas
+
+    else -- 4 Chunks
+        local leftTopChunk = chunks[1]
+        local centerPoint = Area.get_chunk_area_from_chunk_position(leftTopChunk).right_bottom
+        local areas = {
+            -- left_top
+            {
+                chunk = leftTopChunk,
+                area = Entity.area_of_bounding_box_lt_rb(vertices.left_top, centerPoint)
+            },
+            -- right_bottom
+            {
+                chunk = chunks[2],
+                area = Entity.area_of_bounding_box_lt_rb(centerPoint, vertices.right_bottom)
+            },
+            -- left_bottom
+            {
+                chunk = chunks[3],
+                area = Entity.area_of_bounding_box_lt_rb({
+                    x = vertices.left_bottom.x,
+                    y = centerPoint.y
+                }, {
+                    x = centerPoint.x,
+                    y = vertices.left_bottom.y
+                })
+            },
+            -- right_top
+            {
+                chunk = chunks[4],
+                area = Entity.area_of_bounding_box_lt_rb({
+                    x = centerPoint.x,
+                    y = vertices.right_top.y
+                }, {
+                    x = vertices.right_top.x,
+                    y = centerPoint.y
+                })
+            }
+        }
+        Logger.trace_block("Calculated areas of entity %s within 4 chunks: %s", entity.name, areas)
+        return areas
     end
 end
 
@@ -147,7 +152,7 @@ end
 -- --- left_bottom position's chunk
 -- --- right_top position's chunk
 -- 2nd returned value is the vertices of the entity
-function Entity.chunks_of(entity) -- TODO tests
+function Entity.chunks_of(entity)
     Logger.trace("Finding chunks of entity")
     if Entity.is_valid(entity) then
         local bb = entity.bounding_box

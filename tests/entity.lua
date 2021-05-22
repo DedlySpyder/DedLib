@@ -2,6 +2,7 @@ local Tester = require("modules/tester")
 
 local Area = require("modules/area")
 local Entity = require("modules/entity")
+local Position = require("modules/position")
 
 local EntityTests = {}
 
@@ -124,7 +125,55 @@ function EntityTests.test_area_of_bounding_box_lt_rb_invalid()
 end
 
 
--- Entity.area_of_by_chunks tests -- TODO
+-- Entity._area_of_by_chunks_and_vertices tests
+local areaOfByChunksAndVerticesTests = {
+    {
+        name = "0_chunks",
+        chunks = {},
+        bb = {},
+        expected = {}
+    },
+    {
+        name = "1_chunk",
+        chunks = {{x=0, y=0}},
+        bb = {{7, 7},{10, 10}},
+        expected = {{chunk = {x=0, y=0}, area = 9}}
+    },
+    {
+        name = "2_chunks_vertical",
+        chunks = {{x=-1, y=-1},{x=0, y=-1}},
+        bb = {{-3,-3}, {1,-1}},
+        expected = {{chunk = {x=-1, y=-1}, area = 6}, {chunk = {x=0, y=-1}, area = 2}}
+    },
+    {
+        name = "2_chunks_horizontal",
+        chunks = {{x=0, y=-1},{x=0, y=0}},
+        bb = {{1,-1}, {3,3}},
+        expected = {{chunk = {x=0, y=-1}, area = 2}, {chunk = {x=0, y=0}, area = 6}}
+    },
+    {
+        name = "4_chunks",
+        chunks = {{x=-1, y=-1},{x=0, y=0},{x=-1, y=0},{x=0, y=-1}},
+        bb = {{-2,-2}, {1,1}},
+        expected = {
+            {chunk = {x=-1, y=-1}, area = 4},
+            {chunk = {x=0, y=0}, area = 1},
+            {chunk = {x=-1, y=0}, area = 2},
+            {chunk = {x=0, y=-1}, area = 2}
+        }
+    }
+}
+
+for _, data in ipairs(areaOfByChunksAndVerticesTests) do
+    local name = "test__area_of_by_chunks_and_vertices__" .. data["name"]
+    local chunks = data["chunks"]
+    local expected = data["expected"]
+    local vertices = Area.get_bounding_box_vertices(data["bb"]) --{{-1,-3}, {1,-1}}
+
+    local entity = Tester.get_mock_valid_entity({bounding_box = vertices, name = name})
+
+    EntityTests[name] = Tester.create_basic_test(Entity._area_of_by_chunks_and_vertices, expected, entity, chunks, vertices)
+end
 
 
 -- Entity.chunks_of
