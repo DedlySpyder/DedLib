@@ -2,6 +2,8 @@
 local Logger = require("modules/logger").create("Tester_Test")
 local Tester = require("modules/tester")
 
+require("util") -- Core Factorio lib
+
 local test_assert_counts = {success = 0, failed = 0}
 local test_assert_equals = function(x, y, assertMessage, wantSuccess)
     local s, e = pcall(function() Tester.assert_equals(x, y, assertMessage) end)
@@ -74,6 +76,25 @@ return function()
             "table same",
             true
     )
+
+    local function mockValidEntityTester(testingFor, values, expectedEntity)
+        Logger.trace("Testing get_mock_valid_entity for %s with values: %s", testingFor, values)
+        local mock = Tester.get_mock_valid_entity(values)
+        Tester.assert_equals(expectedEntity, mock, "Mock valid entity for " .. testingFor .. " failed: " .. serpent.line(values))
+    end
+
+    mockValidEntityTester("empty arg", nil, {valid = true})
+    mockValidEntityTester("other values", {foo = "bar"}, {valid = true, foo = "bar"})
+
+    local mockValidEntityFatalStatus, mockValidEntityFatalMessage =
+        pcall(mockValidEntityTester, "non-table fatal error", "foobar", "THIS SHOULDN'T EVEN SEE THE ASSERT")
+    mockValidEntityFatalMessage = util.split(mockValidEntityFatalMessage, ":")[3]
+    if mockValidEntityFatalStatus or mockValidEntityFatalMessage ~= " Values for mock entity is not a table" then
+        error(string.format("Fatal mock valid entity test failed, status is <%s>, message is <%s>",
+                tostring(mockValidEntityFatalStatus),
+                mockValidEntityFatalMessage
+        ))
+    end
 
     Logger.trace("Loading tests into tester:")
     Tester.add_test(function() Logger.info("Good single test, unnamed") end)
