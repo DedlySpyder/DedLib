@@ -196,7 +196,7 @@ function Logger.create(loggerArgs)
         end
     end
 
-    local function insert_method(level, blockPrint)
+    local function insert_method(level)
         local levelValue = Logger.get_level_value(level)
         local upperLevel = string.upper(level)
 
@@ -212,16 +212,14 @@ function Logger.create(loggerArgs)
             logFunc = Logger._log_file
         else
             l[level] = stub
+            l[level .. "_block"] = stub
             return
         end
 
         local blockFunc = serpent.block
         local lineFunc = serpent.line
-        if blockPrint then
-            l[level .. "_block"] = l._generate_log_func(upperLevel, logFunc, blockFunc)
-        else
-            l[level] = l._generate_log_func(upperLevel, logFunc, lineFunc)
-        end
+        l[level] = l._generate_log_func(upperLevel, logFunc, lineFunc)
+        l[level .. "_block"] = l._generate_log_func(upperLevel, logFunc, blockFunc)
     end
 
     -- Create all the `.[level]` and `.[level]_block` methods on the logger
@@ -231,12 +229,6 @@ function Logger.create(loggerArgs)
     insert_method("info")
     insert_method("debug")
     insert_method("trace")
-    insert_method("fatal", true)
-    insert_method("error", true)
-    insert_method("warn", true)
-    insert_method("info", true)
-    insert_method("debug", true)
-    insert_method("trace", true)
 
     return l
 end
