@@ -217,6 +217,42 @@ function LoggerTests.test_log_level_fully_on_trace()
     Tester.assert_equals("TRACE", fullyOnLoggerUpperLevel)
 end
 
+function LoggerTests.test_log_block_level_fully_on_fatal()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.fatal_block("message")
+    Tester.assert_equals("FATAL", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_on_error()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.error_block("message")
+    Tester.assert_equals("ERROR", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_on_warn()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.warn_block("message")
+    Tester.assert_equals("WARN", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_on_info()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.info_block("message")
+    Tester.assert_equals("INFO", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_on_debug()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.debug_block("message")
+    Tester.assert_equals("DEBUG", fullyOnLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_on_trace()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.trace_block("message")
+    Tester.assert_equals("TRACE", fullyOnLoggerUpperLevel)
+end
+
 
 -- Log level tests -- fully off
 local fullyOffLogger = Logger.create({ modName = "ModName", prefix = "Prefix", levelOverride = Logger.ALL_LOG_LEVELS[1]})
@@ -256,6 +292,42 @@ end
 function LoggerTests.test_log_level_fully_off_trace()
     fullyOffLoggerUpperLevel = nil
     fullyOffLogger.trace("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_off_fatal()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.fatal_block("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_off_error()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.error_block("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_off_warn()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.warn_block("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_off_info()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.info_block("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_off_debug()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.debug_block("message")
+    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+end
+
+function LoggerTests.test_log_block_level_fully_off_trace()
+    fullyOnLoggerUpperLevel = nil
+    fullyOnLogger.trace_block("message")
     Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
