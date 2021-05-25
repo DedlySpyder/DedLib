@@ -8,7 +8,7 @@ function Entity.is_valid(entity) --TODO - performance? - cacheable (unit num + t
     return entity and entity.valid
 end
 
-function Entity.area_of(entity) -- TODO - moved from Area.area_of_entity
+function Entity.area_of(entity)
     Logger.trace("Finding area of entity")
     if Entity.is_valid(entity) then
         return Entity.area_of_bounding_box(entity.bounding_box)
