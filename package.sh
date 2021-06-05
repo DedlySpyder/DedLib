@@ -9,4 +9,4 @@ mod_version=$(jq -r '.version' info.json)
 git tag "$mod_version"
 
 # Create zip with exclusions
-zip -r "${mod_name}_${mod_version}.zip" . -x '*.git*' 'tests/*' 'package.sh' 'docs/*'
+zip -r "${mod_name}_${mod_version}.zip" . -x '*.git*' 'tests/*' 'package.sh' 'docs/*' '*.iml'
