@@ -97,17 +97,8 @@ function Area.standardize_bounding_box(bounding_box)
         local lf = Position.standardize(bounding_box.left_top)
         local rb = Position.standardize(bounding_box.right_bottom)
         if lf and rb then
-            if bounding_box.left_top.x == lf.x and
-                    bounding_box.left_top.y == lf.y and
-                    bounding_box.right_bottom.x == rb.x and
-                    bounding_box.right_bottom.y == rb.y then
-                Logger.trace("Bounding_box was already standardized")
-                return bounding_box
-            else
-                local standardized = {left_top = lf, right_bottom = rb}
-                Logger.trace("Bounding_box standardized: %s", standardized)
-                return standardized
-            end
+            Logger.trace("Bounding_box already had left_top & bottom_right, or was fully standardized. Returning deepcopy...")
+            return {left_top = lf, right_bottom = rb} -- Position.standardize always returns a deepcopy as well
         end
     end
 

@@ -11,8 +11,8 @@ function Position.standardize(position)
     end
 
     if position.x and position.y then
-        Logger.trace("Position was already standardized")
-        return position
+        Logger.trace("Position was already standardized, returning deepcopy...")
+        return {x = position.x, y = position.y}
     end
 
     if #position ~= 2 then
