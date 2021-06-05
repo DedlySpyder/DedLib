@@ -6,13 +6,83 @@ local Area = {} -- TODO -- docs
 function Area.area_of_entity(entity)
     Logger.trace("Finding area of an entity")
     if entity and entity.valid and entity.bounding_box then
-        local bb = Area.standardize_bounding_box(entity.bounding_box)
-        local area = (math.ceil(bb.right_bottom.x) - math.floor(bb.left_top.x)) * (math.ceil(bb.right_bottom.y) - math.floor(bb.left_top.y))
+        local bounding_box = Area.standardize_bounding_box(entity.bounding_box)
+        local bb = Area.round_bounding_box_up(bounding_box)
+        local area = (bb.right_bottom.x - bb.left_top.x) * (bb.right_bottom.y - bb.left_top.y)
         Logger.trace("Area of entity is %s with bounding box: %s", area, bb)
         return area
     else
         Logger.error("Entity is nil, invalid, or missing bounding_box")
     end
+end
+
+function Area.round_bounding_box_up(bounding_box) -- TODO - testing
+    Logger.trace("Attempting to round bounding_box up to nearest tiles: %s", bounding_box)
+    local bb = Area.standardize_bounding_box(bounding_box)
+    if bb then
+        local left_top = bb.left_top
+        local right_bottom = bb.right_bottom
+        local newBoundingBox = {
+            left_top = {
+                x = math.floor(left_top.x),
+                y = math.floor(left_top.y)
+            },
+            right_bottom = {
+                x = math.ceil(right_bottom.x),
+                y = math.ceil(right_bottom.y)
+            }
+        }
+        Logger.trace("Rounded up bounding_box: %s", newBoundingBox)
+        return newBoundingBox
+    end
+end
+
+function Area.modify_bounding_box(bounding_box, bounding_box_modify) -- TODO - testing
+    local sBoundingBox = Area.standardize_bounding_box(bounding_box)
+    local sBoundingBoxMod = Area.standardize_bounding_box(bounding_box_modify)
+    if sBoundingBox and sBoundingBoxMod then
+        Logger.trace("Attempting to increase bounding_box <%s> by <%s>", bounding_box, bounding_box_modify)
+        for point, position in pairs(sBoundingBox) do
+            position.x = position.x + sBoundingBoxMod[point].x
+            position.y = position.y + sBoundingBoxMod[point].y
+        end
+        Logger.trace("Modified bounding_box: %s", sBoundingBox)
+        return sBoundingBox
+    else
+        Logger.error("Failed to standardize bounding_box <%s> or modifier <%s>, defaulting to input bounding_box",
+                bounding_box,
+                bounding_box_modify
+        )
+        return bounding_box
+    end
+end
+
+function Area.grow_bounding_box_by_n(bounding_box, n) -- TODO - testing
+    local negN = n * -1
+    return Area.modify_bounding_box(bounding_box, {
+        left_top = {
+            x = negN, -- Left
+            y = negN  -- Top
+        },
+        right_bottom = {
+            x = n, -- Right
+            y = n  -- Bottom
+        }
+    })
+end
+
+function Area.shrink_bounding_box_by_n(bounding_box, n) -- TODO - testing
+    local negN = n * -1
+    return Area.modify_bounding_box(bounding_box, {
+        left_top = {
+            x = n,
+            y = n
+        },
+        right_bottom = {
+            x = negN,
+            y = negN
+        }
+    })
 end
 
 function Area.standardize_bounding_box(bounding_box)
