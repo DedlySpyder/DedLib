@@ -164,7 +164,7 @@ function Entity.chunks_of(entity)
 
             local chunks = {leftTopChunk}
             -- If the left top and right bottom are in the same chunk, then the whole entity is in the same chunk
-            if Position.compare(leftTopChunk, rightBottomChunk) then
+            if Position.is_equal(leftTopChunk, rightBottomChunk) then
                 Logger.trace("Entity %s is only in one chunk: %s", entity.name, leftTopChunk)
                 return chunks
             else
@@ -179,7 +179,7 @@ function Entity.chunks_of(entity)
                 -- We know the entity crosses at least one chunk boundary, so a corner can _only_ be in the same chunk
                 -- as an adjacent corner. So, the new corners only need compared to the original 2 corners for new chunks to be found
                 -- Additionally, we can never have a entity in only 3 chunks as a basic rule
-                if not (Position.compare(leftTopChunk, leftBottomChunk) or Position.compare(rightBottomChunk, leftBottomChunk)) then
+                if not (Position.is_equal(leftTopChunk, leftBottomChunk) or Position.is_equal(rightBottomChunk, leftBottomChunk)) then
                     table.insert(chunks, leftBottomChunk)
                     table.insert(chunks, rightTopChunk)
                 end
