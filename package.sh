@@ -11,5 +11,5 @@ git tag "$mod_version"
 
 # Create zip with exclusions
 cd ..
-zip -r "${mod_name_and_version}.zip" "${mod_name_and_version}" -x '*.git*' 'tests/*' 'package.sh' 'docs/*' '*.iml'
+zip -r "${mod_name_and_version}.zip" "${mod_name_and_version}" -x '*/*.git*' '*/tests/*' '*/package.sh' '*/docs/*' '*/*.iml'
 cd -
