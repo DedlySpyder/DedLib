@@ -18,21 +18,9 @@ end
 Tester.reset()
 
 function Tester.add_test(func, name)
-    if type(func) == "function" then
-        if not name then name = "Single Test #" .. #Tester._TESTERS end
-        Logger.debug("Adding single test %s", name)
-        table.insert(Tester._TESTERS, {name = name, tests = {[name] = func}})
-        return true
-    else
-        Logger.error("Failed to add new test function <" .. tostring(name) .. ">, is not a function.")
-        if Logger.level_is_less_than("debug") then
-            Logger.info("Enable debug logging for stacktrace.")
-        else
-            Logger.debug(debug.traceback())
-        end
-        return false
-    end
-
+    if not name then name = "Single Test #" .. #Tester._TESTERS end
+    Logger.debug("Adding single test %s", name)
+    return Tester.add_tests({[name] = func}, name .. " Tester")
 end
 
 function Tester.add_tests(tests, testerName)
@@ -43,17 +31,22 @@ function Tester.add_tests(tests, testerName)
         local testerName = tester["name"]
         Logger.debug("Creating tester for %s", testerName)
         tester["tests"] = {}
-        for name, func in pairs(tests) do
+        for name, data in pairs(tests) do
             if type(name) == "number" then name = "Test #" .. name end
             if string.find(string.lower(name), "test") then
-                Logger.debug("Adding test " .. name)
-                tester["tests"][name] = func
+                if type(data) == "function" then
+                    Logger.debug("Adding test " .. name)
+                    tester["tests"][name] = {func = data}
+                else
+                    Logger.debug("Adding test %s with data: %s", name, data)
+                    tester["tests"][name] = data
+                end
             else
                 Logger.debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
             end
         end
         Logger.debug("Done adding tests to %s", testerName)
-        if table_size(tester["tests"]) then
+        if table_size(tester["tests"]) > 0 then
             table.insert(Tester._TESTERS, tester)
         else
             Logger.warn('No tests for %s found. Did the test functions names contain the word "test"?', testerName)
@@ -114,9 +107,20 @@ function Tester.run()
         end
         Tester._FAILED_TESTS[testerName] = {}
 
-        for name, func in pairs(tester["tests"]) do
+        for name, testData in pairs(tester["tests"]) do
             Logger.debug("Running test %s", name)
-            local status, error = pcall(func)
+            local func = testData["func"]
+            local args = testData["args"] or {}
+            local genArgsFunc = testData["generateArgsFunc"]
+            if genArgsFunc and type(genArgsFunc) == "function" then
+                if testData["generateArgsFuncArgs"] then
+                    args = genArgsFunc(table.unpack(testData["generateArgsFuncArgs"]))
+                else
+                    args = genArgsFunc()
+                end
+            end
+
+            local status, error = pcall(func, table.unpack(args))
             if status then
                 Logger.info("Test %s succeeded", name)
                 Tester._COUNTS["success"] = Tester._COUNTS["success"] + 1

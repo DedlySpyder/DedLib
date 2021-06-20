@@ -96,71 +96,75 @@ return function()
         ))
     end
 
+    -- TODO - better testing for the tester, need to return the list of pass/failed tests (will eventually be a UI anyways)
+    --          - So I can actually verify individual failures/successes
+    --      - Test for missing "test" in name in add_test
+
     Logger.trace("Loading tests into tester:")
-    Tester.add_test(function() Logger.info("Good single test, unnamed") end)
-    Tester.add_test(function() Logger.info("Good single test, named") end, "good single test")
-    Tester.add_test(function()
+    Tester.add_test(function() Logger.info("Good single test, unnamed") end) -- Single Test #0 -- pass
+    Tester.add_test(function() Logger.info("Good single test, named") end, "good single test") -- good single test -- pass
+    Tester.add_test(function() -- Single Test #2 -- fail
         Logger.info("Bad single test, unnamed")
         error("i failed")
     end)
-    Tester.add_test(function()
+    Tester.add_test(function() -- bad single test -- fail
         Logger.info("Bad single test, named")
         error("i failed")
     end, "bad single test")
-    Tester.add_test(function()
+    Tester.add_test(function() -- assert failure -- fail
         Logger.info("Bad single test, assert failure")
         assert(false)
-    end, "assert failure")
+    end, "assert failure test")
 
     Tester.add_tests({
-        test_good = function()
+        test_good = function() -- test_good -- pass
             Logger.info("Good multi test, unnamed")
         end,
-        test_bad = function()
+        test_bad = function() -- test_bad -- fail
             Logger.info("bad multi test, unnamed")
             error("i failed")
         end
     })
     Tester.add_tests({
-        test_good = function()
+        test_good = function() -- test_good -- pass
             Logger.info("Good multi test, named")
         end,
-        test_bad = function()
+        test_bad = function() -- test_bad -- fail
             Logger.info("bad multi test, named")
             error("i failed")
         end
     }, "mixed multi test")
 
     Tester.add_tests({
-        test_bad = function()
+        test_bad = function() -- test_bad -- fail
             Logger.info("duplicate tester")
             error("i failed")
         end
     }, "duplicate")
     Tester.add_tests({
-        test_bad = function()
+        test_bad = function() -- test_bad -- fail
             Logger.info("duplicate tester")
             error("i failed")
         end
     }, "duplicate")
     Tester.add_tests({
-        test_bad = function()
+        test_bad = function() -- test_bad -- fail
             Logger.info("duplicate tester")
             error("i failed")
         end
     }, "duplicate")
 
     Tester.add_tests({
-        SHOULD_NOT_SEE_THIS_FUNC = function()
+        SHOULD_NOT_SEE_THIS_FUNC = function() -- SHOULD_NOT_SEE_THIS_FUNC -- no-op
             Logger.error("NOT A TEST")
         end
     }, "NO TESTS FOR ME")
 
     Tester.add_tests({
-        test_good = function()
+        test_good = function() -- test_good -- pass
             Logger.info("Good test for some ignored tester")
         end,
-        SHOULD_NOT_SEE_THIS_FUNC = function()
+        SHOULD_NOT_SEE_THIS_FUNC = function() -- SHOULD_NOT_SEE_THIS_FUNC -- no-op
             Logger.error("NOT A TEST")
         end
     }, "one test for me")
