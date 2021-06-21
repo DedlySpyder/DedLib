@@ -245,24 +245,29 @@ return function()
     Logger.trace("Running tester")
     test_results["results"] = Tester.run()
 
-    -- Reporting
-    Logger.debug("\n")
-    Logger.debug("Final test assert_equals counts: " .. serpent.line(test_assert_counts))
+    -- Validations
+    local count = {succeeded = 0, failed = 0}
+    local increment_failed = function()
+        count["failed"] = count["failed"] + 1
+    end
+    local increment_succeeded = function()
+        count["succeeded"] = count["succeeded"] + 1
+    end
 
-    local count = 0
-    local errorCount = 0
     for name, func in pairs(test_validations) do
         Logger.debug("Running validation for: %s", name)
         local s, err = pcall(func)
         if not s then
             Logger.fatal("Failed validation of Tester test %s with error: %s", name, err)
-            errorCount = errorCount + 1
+            increment_failed()
+        else
+            increment_succeeded()
         end
-        count = count + 1
     end
 
-    Logger.info("Ran %s validations for Tester with %s failure(s)", count, errorCount)
-    if errorCount > 0 then
-        error("General Tester tests are failing, cannot accurately run other tests at this time. See debug logs for more details.")
+    Logger.info("Tester validation results: %s", count)
+    if count["failed"] > 0 then
+        error("Tester validations are failing, cannot accurately run other tests at this time. See debug logs for more details.")
     end
+    return count
 end

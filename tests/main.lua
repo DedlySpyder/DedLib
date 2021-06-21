@@ -1,26 +1,43 @@
 -- TODO - this can all be a new mod?
 -- TODO - should probably still have tests on the functions that wrap other ones, just to make sure they don't break (missing return or something dumb happens)
+local Logger = require("modules/logger").create("Test_Main")
 local Tester = require("modules/testing/tester")
 
+local assert = require("tests/testing/assert")
 local tester = require("tests/testing/tester")
 
-local area = require("tests/area")
-local entity = require("tests/entity")
-local position = require("tests/position")
+local stringify = require("tests/stringify")
 local logger = require("tests/logger")
 
+local position = require("tests/position")
+local area = require("tests/area")
+
+local entity = require("tests/entity")
+
+local tester_results = {succeeded = 0, failed = 0}
+local add_tester_results = function(results)
+    tester_results["succeeded"] = tester_results["succeeded"] + results["succeeded"]
+    tester_results["failed"] = tester_results["failed"] + results["failed"]
+end
+
 return function()
+    Logger.info("Running tests for DedLib")
+    Logger.info("Running Tester module validations")
     -- Test the tester first
-    tester()
+    add_tester_results(assert())
+    add_tester_results(tester())
+
+    Logger.info("Tester validation results: %s", tester_results)
 
     -- Run other tests
     -- Modules are tested in dependency order (all depend on logger for example)
-    Tester.add_tests(logger, "Logger")
-
-    Tester.add_tests(position, "Position")
-    Tester.add_tests(area, "Area")
-
-    Tester.add_tests(entity, "Entity")
-
-    Tester.run()
+    --Tester.add_tests(stringify, "Stringify") --TODO stringify tester
+    --Tester.add_tests(logger, "Logger")
+    --
+    --Tester.add_tests(position, "Position")
+    --Tester.add_tests(area, "Area")
+    --
+    --Tester.add_tests(entity, "Entity")
+    --
+    --Tester.run()
 end
