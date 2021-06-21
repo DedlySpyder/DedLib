@@ -1,6 +1,8 @@
 local LoggerLib = require("logger")
 local Logger = LoggerLib.create{modName = "DedLib", prefix = "Tester"}
 
+local Util = require("util")
+
 local Tester = {}
 
 --[[
@@ -61,7 +63,9 @@ function Tester.add_tests(tests, testerName)
         end
     end
 end
-
+--TODO - break asserts out to their own file when doing the below, & the message part can be extracted out
+-- TODO - implement - other methods like this to add the stacktrace to normal assert & error()
+-- exact instead of serpent for this for one
 function Tester.assert_equals(expected, actual, message)
     if serpent.line(expected) ~= serpent.line(actual) then
         if message then
@@ -69,9 +73,50 @@ function Tester.assert_equals(expected, actual, message)
         else
             message = ""
         end
-        message = message .. "Assertion failed. Expected <" .. serpent.line(expected) .. "> - Actual <" .. serpent.line(actual) .. ">"
+        message = message .. "Assertion equals failed. Expected <" .. serpent.line(expected) .. "> - Actual <" .. serpent.line(actual) .. ">"
         error({message = message, stacktrace = debug.traceback()})
     end
+end
+
+function Tester.assert_starts_with(startsWith, value, message)
+    if not Util.String.starts_with(tostring(value), tostring(startsWith)) then
+        if message then
+            message = message .. "\n"
+        else
+            message = ""
+        end
+        message = message .. "Assertion starts with failed. Starts with <" .. serpent.line(startsWith) .. "> - Actual string <" .. serpent.line(value) .. ">"
+        error({message = message, stacktrace = debug.traceback()})
+    end
+end
+
+function Tester.assert_ends_with(endsWith, value, message)
+    if not Util.String.ends_with(tostring(value), tostring(endsWith)) then
+        if message then
+            message = message .. "\n"
+        else
+            message = ""
+        end
+        message = message .. "Assertion starts with failed. Ends with <" .. serpent.line(endsWith) .. "> - Actual string <" .. serpent.line(value) .. ">"
+        error({message = message, stacktrace = debug.traceback()})
+    end
+end
+
+function Tester.assert_contains_exact(expectedItem, list, message) --TODO make an non-exact version
+    for _, listItem in pairs(list) do
+        if listItem == expectedItem then
+            return
+        end
+    end
+
+    -- Wasn't found
+    if message then
+        message = message .. "\n"
+    else
+        message = ""
+    end
+    message = message .. "Assertion contains exact failed. Expected <" .. serpent.line(expectedItem) .. "> - List <" .. serpent.line(list) .. ">"
+    error({message = message, stacktrace = debug.traceback()})
 end
 
 function Tester.get_mock_valid_entity(values)
