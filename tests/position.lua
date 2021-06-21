@@ -1,4 +1,4 @@
-local Tester = require("modules/tester")
+local Tester = require("modules/testing/tester")
 
 local Position = require("modules/position")
 
@@ -10,7 +10,7 @@ function PositionTests.test_standardize_position_arg_nil()
     local actual = Position.standardize(nil)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: nil")
+    Tester.Assert.assert_equals(expected, actual, "Input failed: nil")
 end
 
 function PositionTests.test_standardize_position_arg_not_table()
@@ -18,7 +18,7 @@ function PositionTests.test_standardize_position_arg_not_table()
     local actual = Position.standardize(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. test)
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. test)
 end
 
 function PositionTests.test_standardize_position_arg_already_standardized()
@@ -26,7 +26,7 @@ function PositionTests.test_standardize_position_arg_already_standardized()
     local actual = Position.standardize(test)
     local expected = {x=1,y=2}
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function PositionTests.test_standardize_position_arg_only_x()
@@ -34,7 +34,7 @@ function PositionTests.test_standardize_position_arg_only_x()
     local actual = Position.standardize(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function PositionTests.test_standardize_position_arg_only_y()
@@ -42,7 +42,7 @@ function PositionTests.test_standardize_position_arg_only_y()
     local actual = Position.standardize(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function PositionTests.test_standardize_position_too_many_coords()
@@ -50,7 +50,7 @@ function PositionTests.test_standardize_position_too_many_coords()
     local actual = Position.standardize(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function PositionTests.test_standardize_position_not_enough_coords()
@@ -58,7 +58,7 @@ function PositionTests.test_standardize_position_not_enough_coords()
     local actual = Position.standardize(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function PositionTests.test_standardize_position_good()
@@ -66,7 +66,7 @@ function PositionTests.test_standardize_position_good()
     local actual = Position.standardize(test)
     local expected = {x=1,y=2}
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 

@@ -1,4 +1,4 @@
-local Tester = require("modules/tester")
+local Tester = require("modules/testing/tester")
 
 local Area = require("modules/area")
 
@@ -10,7 +10,7 @@ function AreaTests.test_standardize_bounding_box_arg_nil()
     local actual = Area.standardize_bounding_box(nil)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: nil")
+    Tester.Assert.assert_equals(expected, actual, "Input failed: nil")
 end
 
 function AreaTests.test_standardize_bounding_box_arg_not_table()
@@ -18,7 +18,7 @@ function AreaTests.test_standardize_bounding_box_arg_not_table()
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. test)
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. test)
 end
 
 function AreaTests.test_standardize_bounding_box_outer_standardized_inner_not_standardized()
@@ -26,7 +26,7 @@ function AreaTests.test_standardize_bounding_box_outer_standardized_inner_not_st
     local actual = Area.standardize_bounding_box(test)
     local expected = {left_top = {x=1, y=2}, right_bottom = {x=3, y=4}}
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_outer_standardized_inner_not_valid_pos_1()
@@ -34,7 +34,7 @@ function AreaTests.test_standardize_bounding_box_outer_standardized_inner_not_va
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_outer_standardized_inner_not_valid_pos_2()
@@ -42,7 +42,7 @@ function AreaTests.test_standardize_bounding_box_outer_standardized_inner_not_va
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_already_standardized()
@@ -50,7 +50,7 @@ function AreaTests.test_standardize_bounding_box_already_standardized()
     local actual = Area.standardize_bounding_box(test)
     local expected = {left_top = {x=1, y=2}, right_bottom = {x=3, y=4}}
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_too_many_points()
@@ -58,7 +58,7 @@ function AreaTests.test_standardize_bounding_box_too_many_points()
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_not_enough_points()
@@ -66,7 +66,7 @@ function AreaTests.test_standardize_bounding_box_not_enough_points()
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_pos_1_not_table()
@@ -74,7 +74,7 @@ function AreaTests.test_standardize_bounding_box_pos_1_not_table()
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_pos_2_not_table()
@@ -82,7 +82,7 @@ function AreaTests.test_standardize_bounding_box_pos_2_not_table()
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_pos_1_not_position()
@@ -90,7 +90,7 @@ function AreaTests.test_standardize_bounding_box_pos_1_not_position()
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_pos_2_not_position()
@@ -98,7 +98,7 @@ function AreaTests.test_standardize_bounding_box_pos_2_not_position()
     local actual = Area.standardize_bounding_box(test)
     local expected = nil
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function AreaTests.test_standardize_bounding_box_good()
@@ -106,7 +106,7 @@ function AreaTests.test_standardize_bounding_box_good()
     local actual = Area.standardize_bounding_box(test)
     local expected = {left_top = {x=1, y=2}, right_bottom = {x=3, y=4}}
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 
@@ -119,16 +119,16 @@ function AreaTests.test_get_bounding_box_vertices()
     local expectedLb = {x = 1, y = 4}
     local expectedRt = {x = 3, y = 2}
 
-    Tester.assert_equals(expectedLt, result.left_top, "Input failed for left_top: " .. serpent.line(test))
-    Tester.assert_equals(expectedRb, result.right_bottom, "Input failed for right_bottom: " .. serpent.line(test))
-    Tester.assert_equals(expectedLb, result.left_bottom, "Input failed for left_bottom: " .. serpent.line(test))
-    Tester.assert_equals(expectedRt, result.right_top, "Input failed for right_top: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expectedLt, result.left_top, "Input failed for left_top: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expectedRb, result.right_bottom, "Input failed for right_bottom: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expectedLb, result.left_bottom, "Input failed for left_bottom: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expectedRt, result.right_top, "Input failed for right_top: " .. serpent.line(test))
 end
 
 function AreaTests.test_get_bounding_box_vertices_invalid_input()
     local test = {{1,2}}
     local result = Area.get_bounding_box_vertices(test)
-    Tester.assert_equals(nil, result, "Input failed for invalid: " .. serpent.line(test))
+    Tester.Assert.assert_equals(nil, result, "Input failed for invalid: " .. serpent.line(test))
 end
 
 

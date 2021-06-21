@@ -1,4 +1,4 @@
-local Tester = require("modules/tester")
+local Tester = require("modules/testing/tester")
 
 local Area = require("modules/area")
 local Entity = require("modules/entity")
@@ -108,7 +108,7 @@ function EntityTests.test_area_of_bounding_box_lt_rb()
     local actual = Entity.area_of_bounding_box_lt_rb(test1, test2)
     local expected = 9
 
-    Tester.assert_equals(expected, actual,
+    Tester.Assert.assert_equals(expected, actual,
             string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
     )
 end
@@ -118,7 +118,7 @@ function EntityTests.test_area_of_bounding_box_lt_rb_invalid()
     local test2 = nil
     local actual = Entity.area_of_bounding_box_lt_rb(test1, test2)
 
-    Tester.assert_equals(nil, actual,
+    Tester.Assert.assert_equals(nil, actual,
             string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
     )
 end

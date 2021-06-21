@@ -1,5 +1,5 @@
 local Logger = require("modules/logger")
-local Tester = require("modules/tester")
+local Tester = require("modules/testing/tester")
 
 local LoggerTests = {}
 
@@ -10,7 +10,7 @@ function LoggerTests.test_get_level_value_number()
     local actual = Logger.get_level_value(test)
     local expected = 1
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_get_level_value_not_string()
@@ -18,7 +18,7 @@ function LoggerTests.test_get_level_value_not_string()
     local actual = Logger.get_level_value(test)
     local expected = 0
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_get_level_value_not_real_log_level()
@@ -26,7 +26,7 @@ function LoggerTests.test_get_level_value_not_real_log_level()
     local actual = Logger.get_level_value(test)
     local expected = 0
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_get_level_value_off()
@@ -34,7 +34,7 @@ function LoggerTests.test_get_level_value_off()
     local actual = Logger.get_level_value(test)
     local expected = 1
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_get_level_value_trace()
@@ -42,7 +42,7 @@ function LoggerTests.test_get_level_value_trace()
     local actual = Logger.get_level_value(test)
     local expected = #Logger.ALL_LOG_LEVELS
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 
@@ -51,7 +51,7 @@ function LoggerTests.test_get_tick_in_game()
     local actual = Logger._get_tick_in_game()
     local expected = "[" .. game.tick .. "]"
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_get_tick_in_game_with_count()
@@ -59,7 +59,7 @@ function LoggerTests.test_get_tick_in_game_with_count()
     local actual = Logger._get_tick_in_game(test)
     local expected = "[" .. game.tick .. "-" .. test .."]"
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 
@@ -69,7 +69,7 @@ function LoggerTests.test_stringify_int()
     local actual = Logger._stringify(test)
     local expected = "42"
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_stringify_double()
@@ -77,7 +77,7 @@ function LoggerTests.test_stringify_double()
     local actual = Logger._stringify(test)
     local expected = "2.005"
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_stringify_string()
@@ -85,7 +85,7 @@ function LoggerTests.test_stringify_string()
     local actual = Logger._stringify(test)
     local expected = "valid_string"
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 function LoggerTests.test_stringify_table()
@@ -93,7 +93,7 @@ function LoggerTests.test_stringify_table()
     local actual = Logger._stringify(test, serpent.line)
     local expected = '{foo = "bar"}'
 
-    Tester.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
+    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
 end
 
 
@@ -105,7 +105,7 @@ function LoggerTests.test_format_message_with_count()
     local actual = formatMessageLogger._format_message(message, formatArgs, "LEVEL", "foo")
     local expected = "[" .. game.tick .. "-foo][ModName][Prefix] LEVEL - " .. message
 
-    Tester.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
+    Tester.Assert.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
 end
 
 function LoggerTests.test_format_message_string()
@@ -114,7 +114,7 @@ function LoggerTests.test_format_message_string()
     local actual = formatMessageLogger._format_message(message, formatArgs, "LEVEL", nil)
     local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. message
 
-    Tester.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
+    Tester.Assert.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
 end
 
 function LoggerTests.test_format_string_format_args()
@@ -123,7 +123,7 @@ function LoggerTests.test_format_string_format_args()
     local actual = formatMessageLogger._format_message(message, formatArgs, "LEVEL", nil)
     local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - foo_bar"
 
-    Tester.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
+    Tester.Assert.assert_equals(expected, actual, "Input failed <" .. message .. "> with formatArgs: " .. serpent.line(formatArgs))
 end
 
 
@@ -144,7 +144,7 @@ function LoggerTests.test__log_last_message()
     logLogger._log(logFunc, message, formatArgs, "LEVEL")
     local expected = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. message
 
-    Tester.assert_equals(expected, logLogger._LAST_MESSAGE, "Input failed: " .. serpent.line(message))
+    Tester.Assert.assert_equals(expected, logLogger._LAST_MESSAGE, "Input failed: " .. serpent.line(message))
 end
 
 function LoggerTests.test__log_same_message_count()
@@ -155,9 +155,9 @@ function LoggerTests.test__log_same_message_count()
     local actualMessage
     local logFunc = function(m) actualMessage = m end
     logLogger._log(logFunc, message, formatArgs, "LEVEL")
-    Tester.assert_equals(0, logLogger._SAME_MESSAGE_COUNT, "Input failed: " .. serpent.line(message))
+    Tester.Assert.assert_equals(0, logLogger._SAME_MESSAGE_COUNT, "Input failed: " .. serpent.line(message))
     logLogger._log(logFunc, message, formatArgs, "LEVEL")
-    Tester.assert_equals(1, logLogger._SAME_MESSAGE_COUNT, "Input failed: " .. serpent.line(message))
+    Tester.Assert.assert_equals(1, logLogger._SAME_MESSAGE_COUNT, "Input failed: " .. serpent.line(message))
 end
 
 function LoggerTests.test__log_duplicate_messages()
@@ -169,10 +169,10 @@ function LoggerTests.test__log_duplicate_messages()
     local logFunc = function(m) actualMessage = m end
     logLogger._log(logFunc, message, formatArgs, "LEVEL")
     local expected1 = "[" .. game.tick .. "][ModName][Prefix] LEVEL - " .. message
-    Tester.assert_equals(expected1, actualMessage, "Input failed: " .. serpent.line(message))
+    Tester.Assert.assert_equals(expected1, actualMessage, "Input failed: " .. serpent.line(message))
     logLogger._log(logFunc, message, formatArgs, "LEVEL")
     local expected2 = "[" .. game.tick .. "-1][ModName][Prefix] LEVEL - " .. message
-    Tester.assert_equals(expected2, actualMessage, "Input failed: " .. serpent.line(message))
+    Tester.Assert.assert_equals(expected2, actualMessage, "Input failed: " .. serpent.line(message))
 end
 
 
@@ -184,73 +184,73 @@ fullyOnLogger._log = function(_, _, _, upperLevel) fullyOnLoggerUpperLevel = upp
 function LoggerTests.test_log_level_fully_on_fatal()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.fatal("message")
-    Tester.assert_equals("FATAL", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("FATAL", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_on_error()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.error("message")
-    Tester.assert_equals("ERROR", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("ERROR", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_on_warn()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.warn("message")
-    Tester.assert_equals("WARN", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("WARN", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_on_info()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.info("message")
-    Tester.assert_equals("INFO", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("INFO", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_on_debug()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.debug("message")
-    Tester.assert_equals("DEBUG", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("DEBUG", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_on_trace()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.trace("message")
-    Tester.assert_equals("TRACE", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("TRACE", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_on_fatal()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.fatal_block("message")
-    Tester.assert_equals("FATAL", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("FATAL", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_on_error()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.error_block("message")
-    Tester.assert_equals("ERROR", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("ERROR", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_on_warn()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.warn_block("message")
-    Tester.assert_equals("WARN", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("WARN", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_on_info()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.info_block("message")
-    Tester.assert_equals("INFO", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("INFO", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_on_debug()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.debug_block("message")
-    Tester.assert_equals("DEBUG", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("DEBUG", fullyOnLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_on_trace()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.trace_block("message")
-    Tester.assert_equals("TRACE", fullyOnLoggerUpperLevel)
+    Tester.Assert.assert_equals("TRACE", fullyOnLoggerUpperLevel)
 end
 
 
@@ -262,73 +262,73 @@ fullyOffLogger._log = function(_, _, _, upperLevel) fullyOffLoggerUpperLevel = u
 function LoggerTests.test_log_level_fully_off_fatal()
     fullyOffLoggerUpperLevel = nil
     fullyOffLogger.fatal("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_off_error()
     fullyOffLoggerUpperLevel = nil
     fullyOffLogger.error("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_off_warn()
     fullyOffLoggerUpperLevel = nil
     fullyOffLogger.warn("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_off_info()
     fullyOffLoggerUpperLevel = nil
     fullyOffLogger.info("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_off_debug()
     fullyOffLoggerUpperLevel = nil
     fullyOffLogger.debug("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_level_fully_off_trace()
     fullyOffLoggerUpperLevel = nil
     fullyOffLogger.trace("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_off_fatal()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.fatal_block("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_off_error()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.error_block("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_off_warn()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.warn_block("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_off_info()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.info_block("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_off_debug()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.debug_block("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 function LoggerTests.test_log_block_level_fully_off_trace()
     fullyOnLoggerUpperLevel = nil
     fullyOnLogger.trace_block("message")
-    Tester.assert_equals(nil, fullyOffLoggerUpperLevel)
+    Tester.Assert.assert_equals(nil, fullyOffLoggerUpperLevel)
 end
 
 
