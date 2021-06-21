@@ -1,6 +1,7 @@
 local LoggerLib = require("logger")
 local Logger = LoggerLib.create{modName = "DedLib", prefix = "Tester"}
 
+local Debug = require("debug")
 local Util = require("util")
 
 local Tester = {}
@@ -14,8 +15,7 @@ then the message will always be printed on an error, but the stacktrace will be 
 function Tester.reset()
     -- {name = name, tests = {[name] = func}}
     Tester._TESTERS = {}
-    Tester._FAILED_TESTS = {}
-    Tester._COUNTS = {success = 0, failed = 0}
+    Tester._RESULTS = {testers = {}, succeeded = {}, failed = {}}
 end
 Tester.reset()
 
@@ -41,7 +41,8 @@ function Tester.add_tests(tests, testerName)
                     tester["tests"][name] = {func = data}
                 else
                     Logger.debug("Adding test %s with data: %s", name, data)
-                    tester["tests"][name] = data
+                    tester["tests"][name] = data -- TODO - fixme - add validation & tests for this
+                                                        -- current format: {func, args, generateArgsFunc, generateArgsFuncArgs}
                 end
             else
                 Logger.debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
@@ -144,15 +145,20 @@ function Tester.run()
         local testerName = tester["name"]
         Logger.debug("Running tester %s", testerName)
 
-        local i = 0
-        while Tester._FAILED_TESTS[testerName] do
+        local i = 1
+        while Tester._RESULTS["testers"][testerName] do
             Logger.warn("Tester named %s already exists, incrementing to make unique", testerName)
             testerName = tester["name"] .. "-" .. i
             i = i + 1
         end
-        Tester._FAILED_TESTS[testerName] = {}
 
-        for name, testData in pairs(tester["tests"]) do
+        local testerIndividualTestResults = {}
+        local succeededTests = {}
+        local failedTests = {}
+        local testerResults = {name = testerName, succeeded = succeededTests, failed = failedTests, tests = testerIndividualTestResults}
+        Tester._RESULTS["testers"][testerName] = testerResults
+
+        for name, testData in pairs(tester["tests"]) do -- TODO - fixme - add before/after? (and on tester too while I'm, at it)
             Logger.debug("Running test %s", name)
             local func = testData["func"]
             local args = testData["args"] or {}
@@ -166,20 +172,39 @@ function Tester.run()
             end
 
             local status, error = pcall(func, table.unpack(args))
+
+            local funcLine = Debug.get_defined_string(func)
+            local testResults = {
+                name = name,
+                result = status,
+                test_location = funcLine
+            }
+
+            -- Index the results by name and by result
+            testerIndividualTestResults[name] = testResults
             if status then
                 Logger.info("Test %s succeeded", name)
-                Tester._COUNTS["success"] = Tester._COUNTS["success"] + 1
+                table.insert(succeededTests, testResults)
+                table.insert(Tester._RESULTS["succeeded"], testResults)
             else
                 if error and error["message"] and error["stacktrace"] then
                     local message = tostring(error["message"])
+
                     Logger.error("Test %s failed: %s", name, message)
-                    table.insert(Tester._FAILED_TESTS[testerName], {name = name, error = message, stack = error["stacktrace"]})
+                    testResults["error"] = message
+                    testResults["stack"] = error["stacktrace"]
                 else
-                    error = tostring(error)
+                    if type(error) == "table" then
+                        error = serpent.line(error)
+                    else
+                        error = tostring(error)
+                    end
+
                     Logger.error("Test %s failed: %s", name, error)
-                    table.insert(Tester._FAILED_TESTS[testerName], {name = name, error = error, stack = debug.traceback()})
+                    testResults["error"] = error
                 end
-                Tester._COUNTS["failed"] = Tester._COUNTS["failed"] + 1
+                table.insert(failedTests, testResults)
+                table.insert(Tester._RESULTS["failed"], testResults)
             end
         end
     end
@@ -187,32 +212,37 @@ function Tester.run()
     Tester._report_failed()
 
     -- Reset the tester, but dump the counts in case the end user wants them first
-    local counts = Tester._COUNTS
+    local results = Tester._RESULTS
     Logger.debug("Resetting tester values")
     Tester.reset()
-    return counts
+    return results
 end
 
 function Tester._report_failed()
     Logger.info("")
     Logger.info("Finished running tests:")
-    Logger.info("    %d succeeded", Tester._COUNTS["success"])
-    Logger.info("    %d failed", Tester._COUNTS["failed"])
+    Logger.info("    %d succeeded", #Tester._RESULTS["succeeded"])
+    Logger.info("    %d failed", #Tester._RESULTS["failed"])
 
     if Logger.level_is_less_than("debug") then
         Logger.info("")
         Logger.info("Enable debug logging for more information.")
     end
 
-    for testerName, failedTests in pairs(Tester._FAILED_TESTS) do
+    for testerName, testerData in pairs(Tester._RESULTS["testers"]) do
+        local failedTests = testerData["failed"]
         if #failedTests > 0 then
             Logger.info("")
             Logger.info("%d failed tests for %s", #failedTests, testerName)
         end
         for _, test in ipairs(failedTests) do
             Logger.info("")
-            Logger.info("%s failed: %s", test["name"], test["error"])
-            Logger.debug(test["stack"])
+            Logger.info("%s <%s> failed: %s", test["name"], test["test_location"], test["error"])
+            if test["stack"] then
+                Logger.debug(test["stack"])
+            else
+                Logger.debug("No stacktrace for test failure")
+            end
         end
     end
 end
