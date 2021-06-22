@@ -120,6 +120,19 @@ function Tester.run()
         local testerResults = {name = testerName, succeeded = succeededTests, failed = failedTests, skipped = skippedTests, tests = testerIndividualTestResults}
         Tester._RESULTS["testers"][testerName] = testerResults
 
+        local skipTester = false
+        local testerBefore = tester["before"]
+        if testerBefore and type(testerBefore) == "function" then
+            Logger.debug("Running before function for tester %s", testerName)
+            local s, e = pcall(testerBefore, table.unpack(tester["beforeArgs"] or {}))
+            if s then
+                Logger.debug("Successfully completed tester before function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
+            else
+                Logger.error("Tester before function failed for %s, with error <%s>, skipping run of entire tester...", testerName, e)
+                skipTester = true
+            end
+        end
+
         for name, testData in pairs(tester["tests"]) do -- TODO - fixme - add before/after? (and on tester too while I'm, at it)
             Logger.debug("Running test %s", name)
             local func = testData["func"]
@@ -129,18 +142,24 @@ function Tester.run()
                 test_location = funcLine
             }
 
-            local beforeFunc = testData["before"]
-            if beforeFunc and type(beforeFunc) == "function" then
-                Logger.debug("Running before function for %s", name)
-                local s, e = pcall(beforeFunc, table.unpack(testData["beforeArgs"] or {}))
-                if s then
-                    Logger.debug("Successfully completed before function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
-                else
-                    Logger.error("Before function failed for %s, with error <%s>, skipping run...", name, e)
-                    testResults["result"] = "skipped"
-                    Tester._add_error_to_test_results(name, e, testResults)
+            if skipTester then
+                testResults["result"] = "skipped"
+                testResults["error"] = "Tester skipped"
+            else
+                local beforeFunc = testData["before"]
+                if beforeFunc and type(beforeFunc) == "function" then
+                    Logger.debug("Running before function for %s", name)
+                    local s, e = pcall(beforeFunc, table.unpack(testData["beforeArgs"] or {}))
+                    if s then
+                        Logger.debug("Successfully completed before function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
+                    else
+                        Logger.error("Before function failed for %s, with error <%s>, skipping run...", name, e)
+                        testResults["result"] = "skipped"
+                        Tester._add_error_to_test_results(name, e, testResults)
+                    end
                 end
             end
+
 
             testerIndividualTestResults[name] = testResults
             if testResults["result"] == "skipped" then
