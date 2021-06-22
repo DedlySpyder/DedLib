@@ -203,6 +203,17 @@ function Tester.run()
                 end
             end
         end
+
+        local testerAfter = tester["after"]
+        if testerAfter and type(testerAfter) == "function" then
+            Logger.debug("Running after function for tester %s", testerName)
+            local s, e = pcall(testerAfter, table.unpack(tester["afterArgs"] or {}))
+            if s then
+                Logger.debug("Successfully completed tester after function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
+            else
+                Logger.error("Tester after function failed for %s, with error <%s>, skipping run of entire tester...", testerName, e)
+            end
+        end
     end
 
     Tester._report_failed()
