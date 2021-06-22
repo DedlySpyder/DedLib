@@ -26,6 +26,9 @@ end
 
 function Tester.add_test(func, name)
     if not name then name = "Single Test #" .. #Tester._TESTERS end
+    if not string.find(string.lower(name), "test") then
+        name = name .. " Test"
+    end
     Logger.debug("Adding single test %s", name)
     return Tester.add_tests({[name] = func}, name .. " Tester")
 end

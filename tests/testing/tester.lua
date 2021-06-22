@@ -8,9 +8,6 @@ local test_validations = {}
 local test_results = {results = {}} -- Tester.run() return value will be loaded into ["results"] before validations are run
 
 return function()
-
-    -- TODO - Test for missing "test" in name in add_test
-
     -- Tester Add Test(s) Tests
     local addValidationForBasicAddTest = function(validationName, testerName, testName, expectedResult, errorMessage)
         test_validations[validationName] = function()
@@ -56,14 +53,22 @@ return function()
             true
     )
 
+    Tester.add_test(function() Logger.info("Successful single test, named, missing \"test\" in name") end, "success single incomplete name")
+    addValidationForBasicAddTest(
+            "add_test_unsuccessful_named_missing_test",
+            "success single incomplete name Test Tester",
+            "success single incomplete name Test",
+            true
+    )
+
     Tester.add_test(function()
         Logger.info("Failed single test, unnamed")
         error("Failed single test, unnamed")
     end)
     addValidationForBasicAddTest(
             "add_test_failed_unnamed",
-            "Single Test #2 Tester",
-            "Single Test #2",
+            "Single Test #3 Tester",
+            "Single Test #3",
             false,
             "Failed single test, unnamed"
     )
@@ -103,13 +108,13 @@ return function()
     })
     addValidationForBasicAddTest(
             "add_tests_unnamed_multi_tester_success",
-            "Unnamed Tester #5",
+            "Unnamed Tester #6",
             "success_test",
             true
     )
     addValidationForBasicAddTest(
             "add_tests_unnamed_multi_tester_fail",
-            "Unnamed Tester #5",
+            "Unnamed Tester #6",
             "fail_test",
             false,
             "Failed multi test, unnamed"
