@@ -12,23 +12,23 @@ local increment_test_succeeded = function()
     test_counts["succeeded"] = test_counts["succeeded"] + 1
 end
 
-local test_assert_equals = function(x, y, assertMessage, wantSuccess)
-    local s, e = pcall(function() Assert.assert_equals(x, y, assertMessage) end)
+local test_assert = function(assertFuncName, x, y, wantSuccess)
+    local s, e = pcall(Assert[assertFuncName], x, y)
     if s then
         if wantSuccess then
-            Logger.debug("Expected success, and got success <" .. tostring(x) .. "> to <" .. tostring(y) .. ">")
+            Logger.debug("Assert func <" .. assertFuncName .. ">, Expected success, and got success <" .. serpent.line(x) .. "> to <" .. serpent.line(y) .. ">")
             increment_test_succeeded()
         else
-            Logger.fatal("Expected failure, but got success <" .. tostring(x) .. "> to <" .. tostring(y) .. ">")
+            Logger.fatal("Assert func <" .. assertFuncName .. ">, Expected failure, but got success <" .. serpent.line(x) .. "> to <" .. serpent.line(y) .. ">")
             increment_test_failed()
         end
     else
         if wantSuccess then
-            Logger.fatal("Expected success, but got failure <" .. tostring(x) .. "> to <" .. tostring(y) .. ">")
+            Logger.fatal("Assert func <" .. assertFuncName .. ">, Expected success, but got failure <" .. serpent.line(x) .. "> to <" .. serpent.line(y) .. ">")
             Logger.trace(e)
             increment_test_failed()
         else
-            Logger.debug("Expected failure, and got failure <" .. tostring(x) .. "> to <" .. tostring(y) .. ">")
+            Logger.debug("Assert func <" .. assertFuncName .. ">, Expected failure, and got failure <" .. serpent.line(x) .. "> to <" .. serpent.line(y) .. ">")
             Logger.trace(e)
             increment_test_succeeded()
         end
@@ -80,53 +80,175 @@ return function()
     end)
 
 
-    Logger.trace("Testing assert_equals string, nil message first")
-    test_assert_equals(
-            "foo",
-            "bar",
-            nil,
-            false
-    )
-    test_assert_equals(
-            "foo",
-            "bar",
-            "string different",
-            false
-    )
-    test_assert_equals(
-            "foo",
-            "foo",
-            "string same",
-            true
-    )
 
-    Logger.trace("Testing assert_equals number")
-    test_assert_equals(
-            42,
-            1,
-            "number different",
-            false
-    )
-    test_assert_equals(
-            42,
-            42,
-            "number same",
-            true
-    )
+    Logger.debug("Testing assert_true")
+    test_assert("assert_true", true, "message", true)
+    test_assert("assert_true", "value", "message", true)
+    test_assert("assert_true", false, "baz", false)
+    test_assert("assert_true", nil, "baz", false)
 
-    Logger.trace("Testing assert_equals table")
-    test_assert_equals(
-            { foo = "bar"},
-            { foo = "quz"},
-            "table different",
-            false
-    )
-    test_assert_equals(
-            { foo = "bar"},
-            { foo = "bar"},
-            "table same",
-            true
-    )
+
+    Logger.debug("Testing assert_false")
+    test_assert("assert_false", true, "message", false)
+    test_assert("assert_false", "value", "message", false)
+    test_assert("assert_false", false, "baz", true)
+    test_assert("assert_false", nil, "baz", true)
+
+
+    Logger.debug("Testing assert_equals - string")
+    test_assert("assert_equals", "foobar", "foobar", true)
+    test_assert("assert_equals", "foobar", "baz", false)
+
+    Logger.debug("Testing assert_equals - int")
+    test_assert("assert_equals", 42, 42, true)
+    test_assert("assert_equals", 42, 1, false)
+
+    Logger.debug("Testing assert_equals - float")
+    test_assert("assert_equals", 4.2, 4.2, true)
+    test_assert("assert_equals", 4.2, 0.5, false)
+
+    Logger.debug("Testing assert_equals - float to int")
+    test_assert("assert_equals", 4.0, 4, true)
+
+    Logger.debug("Testing assert_equals - table")
+    test_assert("assert_equals", {foo = "bar"}, {foo = "bar"}, true)
+    test_assert("assert_equals", {foo = "bar"}, {foo = "quz"}, false)
+
+
+    Logger.debug("Testing assert_equals_exactly - string")
+    test_assert("assert_equals_exactly", "foobar", "foobar", true)
+    test_assert("assert_equals_exactly", "foobar", "baz", false)
+
+    Logger.debug("Testing assert_equals_exactly - int")
+    test_assert("assert_equals_exactly", 42, 42, true)
+    test_assert("assert_equals_exactly", 42, 1, false)
+
+    Logger.debug("Testing assert_equals_exactly - float")
+    test_assert("assert_equals_exactly", 4.2, 4.2, true)
+    test_assert("assert_equals_exactly", 4.2, 0.5, false)
+
+    Logger.debug("Testing assert_equals_exactly - float to int")
+    test_assert("assert_equals_exactly", 4.0, 4, true)
+
+    Logger.debug("Testing assert_equals_exactly - table")
+    test_assert("assert_equals_exactly", {foo = "bar"}, {foo = "bar"}, false)
+    test_assert("assert_equals_exactly", {foo = "bar"}, {foo = "quz"}, false)
+
+    Logger.debug("Testing assert_equals_exactly - table same reference")
+    local assertEqualsExactlyTableRef = {foo = "bar"}
+    test_assert("assert_equals_exactly", assertEqualsExactlyTableRef, assertEqualsExactlyTableRef, true)
+
+
+    Logger.debug("Testing assert_starts_with - string")
+    test_assert("assert_starts_with", "foob", "foobar", true)
+    test_assert("assert_starts_with", "baz", "foobar", false)
+
+    Logger.debug("Testing assert_starts_with - int")
+    test_assert("assert_starts_with", 42, "42foobar", true)
+
+    Logger.debug("Testing assert_starts_with - float")
+    test_assert("assert_starts_with", 4.2, "4.2foobar", true)
+
+    Logger.debug("Testing assert_starts_with - table")
+    test_assert("assert_starts_with", {foo = "bar"}, "{foo = \"bar\"}", false) -- This is just for strings
+
+
+    Logger.debug("Testing assert_ends_with - string")
+    test_assert("assert_ends_with", "obar", "foobar", true)
+    test_assert("assert_ends_with", "baz", "foobar", false)
+
+    Logger.debug("Testing assert_ends_with - int")
+    test_assert("assert_ends_with", 42, "foobar42", true)
+
+    Logger.debug("Testing assert_ends_with - float")
+    test_assert("assert_ends_with", 4.2, "foobar4.2", true)
+
+    Logger.debug("Testing assert_ends_with - table")
+    test_assert("assert_ends_with", {foo = "bar"}, "{foo = \"bar\"}", false) -- This is just for strings
+
+
+    Logger.debug("Testing assert_contains - string")
+    test_assert("assert_contains", "foo", {"foo", "bar", "baz"}, true)
+    test_assert("assert_contains", "foo", {a = "foo", b = "bar", c = "baz"}, true)
+    test_assert("assert_contains", "qux", {"foo", "bar", "baz"}, false)
+    test_assert("assert_contains", "qux", {a = "foo", b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains - int")
+    test_assert("assert_contains", 42, {42, "bar", "baz"}, true)
+    test_assert("assert_contains", 42, {a = 42, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains", 42, {a = 42, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains", 1, {42, "bar", "baz"}, false)
+    test_assert("assert_contains", 1, {a = 42, b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains - int to string")
+    test_assert("assert_contains", 42, {"42", "bar", "baz"}, false)
+    test_assert("assert_contains", 42, {a = "42", b = "bar", c = "baz"}, false)
+    test_assert("assert_contains", 42, {a = "42", b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains - float")
+    test_assert("assert_contains", 4.2, {4.2, "bar", "baz"}, true)
+    test_assert("assert_contains", 4.2, {a = 4.2, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains", 4.2, {a = 4.2, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains", 1, {4.2, "bar", "baz"}, false)
+    test_assert("assert_contains", 1, {a = 4.2, b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains - float to string")
+    test_assert("assert_contains", 4.2, {"4.2", "bar", "baz"}, false)
+    test_assert("assert_contains", 4.2, {a = "4.2", b = "bar", c = "baz"}, false)
+    test_assert("assert_contains", 4.2, {a = "4.2", b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains - table")
+    test_assert("assert_contains", {"foo"}, {{"foo"}, {"bar"}, {"baz"}}, true)
+    test_assert("assert_contains", {a = "foo"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, true)
+    test_assert("assert_contains", {"qux"}, {{"foo"}, {"bar"}, {"baz"}}, false)
+    test_assert("assert_contains", {d = "qux"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, false)
+    test_assert("assert_contains", {a = "qux"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, false)
+    test_assert("assert_contains", {d = "foo"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, false)
+
+
+    Logger.debug("Testing assert_contains_exactly - string")
+    test_assert("assert_contains_exactly", "foo", {"foo", "bar", "baz"}, true)
+    test_assert("assert_contains_exactly", "foo", {a = "foo", b = "bar", c = "baz"}, true)
+    test_assert("assert_contains_exactly", "qux", {"foo", "bar", "baz"}, false)
+    test_assert("assert_contains_exactly", "qux", {a = "foo", b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains_exactly - int")
+    test_assert("assert_contains_exactly", 42, {42, "bar", "baz"}, true)
+    test_assert("assert_contains_exactly", 42, {a = 42, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains_exactly", 42, {a = 42, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains_exactly", 1, {42, "bar", "baz"}, false)
+    test_assert("assert_contains_exactly", 1, {a = 42, b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains_exactly - int to string")
+    test_assert("assert_contains_exactly", 42, {"42", "bar", "baz"}, false)
+    test_assert("assert_contains_exactly", 42, {a = "42", b = "bar", c = "baz"}, false)
+    test_assert("assert_contains_exactly", 42, {a = "42", b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains_exactly - float")
+    test_assert("assert_contains_exactly", 4.2, {4.2, "bar", "baz"}, true)
+    test_assert("assert_contains_exactly", 4.2, {a = 4.2, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains_exactly", 4.2, {a = 4.2, b = "bar", c = "baz"}, true)
+    test_assert("assert_contains_exactly", 1, {4.2, "bar", "baz"}, false)
+    test_assert("assert_contains_exactly", 1, {a = 4.2, b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains_exactly - float to string")
+    test_assert("assert_contains_exactly", 4.2, {"4.2", "bar", "baz"}, false)
+    test_assert("assert_contains_exactly", 4.2, {a = "4.2", b = "bar", c = "baz"}, false)
+    test_assert("assert_contains_exactly", 4.2, {a = "4.2", b = "bar", c = "baz"}, false)
+
+    Logger.debug("Testing assert_contains_exactly - table")
+    test_assert("assert_contains_exactly", {"foo"}, {{"foo"}, {"bar"}, {"baz"}}, false)
+    test_assert("assert_contains_exactly", {a = "foo"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, false)
+    test_assert("assert_contains_exactly", {"qux"}, {{"foo"}, {"bar"}, {"baz"}}, false)
+    test_assert("assert_contains_exactly", {d = "qux"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, false)
+    test_assert("assert_contains_exactly", {a = "qux"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, false)
+    test_assert("assert_contains_exactly", {d = "foo"}, {{a = "foo"}, {b = "bar"}, {c = "baz"}}, false)
+
+    Logger.debug("Testing assert_contains_exactly - table same reference")
+    local assertContainsExactlyTableRef = {a = "foo"}
+    test_assert("assert_contains_exactly", assertContainsExactlyTableRef, {assertContainsExactlyTableRef, {b = "bar"}, {c = "baz"}}, true)
+
+
 
     -- Other tests can depend on Assert working properly, so fail early if it is failing
     Logger.info("Assert validation results: %s", test_counts)
