@@ -100,6 +100,29 @@ function Tester._add_error_to_test_results(testName, error, testResults)
     return testResults
 end
 
+-- Example: {}, "before|after", "tester|test", "testName"
+-- Returns status of func, false should skip tests
+function Tester._eval_meta_func(data, funcName, layerType, layerName)
+    local func = data[funcName]
+    if func and type(func) == "function" then
+        Logger.debug("Running %s function for %s %s", funcName, layerType, layerName)
+        local s, e = pcall(func, table.unpack(data[funcName .. "Args"] or {}))
+        if s then
+            Logger.debug("Successfully completed %s before function%s", layerType, Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
+        else
+            Logger.error("%s %s function failed for %s, with error <%s>",
+                    Util.String.capitalize(layerType),
+                    funcName,
+                    layerName,
+                    e,
+                    Util.ternary(string.find(funcName, "before") == nil, "", ", skipping...")
+            )
+        end
+        return s, Tester._add_error_to_test_results(layerName, e, {})["error"]
+    end
+    return true
+end
+
 function Tester.run()
     Logger.trace("Running all tests")
     for _, tester in ipairs(Tester._TESTERS) do
@@ -120,20 +143,9 @@ function Tester.run()
         local testerResults = {name = testerName, succeeded = succeededTests, failed = failedTests, skipped = skippedTests, tests = testerIndividualTestResults}
         Tester._RESULTS["testers"][testerName] = testerResults
 
-        local skipTester = false
-        local testerBefore = tester["before"]
-        if testerBefore and type(testerBefore) == "function" then
-            Logger.debug("Running before function for tester %s", testerName)
-            local s, e = pcall(testerBefore, table.unpack(tester["beforeArgs"] or {}))
-            if s then
-                Logger.debug("Successfully completed tester before function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
-            else
-                Logger.error("Tester before function failed for %s, with error <%s>, skipping run of entire tester...", testerName, e)
-                skipTester = true
-            end
-        end
+        local _, beforeTesterError = Tester._eval_meta_func(tester, "before", "tester", testerName)
 
-        for name, testData in pairs(tester["tests"]) do -- TODO - fixme - add before/after? (and on tester too while I'm, at it)
+        for name, testData in pairs(tester["tests"]) do
             Logger.debug("Running test %s", name)
             local func = testData["func"]
             local funcLine = Debug.get_defined_string(func)
@@ -142,21 +154,13 @@ function Tester.run()
                 test_location = funcLine
             }
 
-            if skipTester then
+            if beforeTesterError then
                 testResults["result"] = "skipped"
-                testResults["error"] = "Tester skipped"
+                testResults["error"] = "Tester skipped: " .. beforeTesterError
             else
-                local beforeFunc = testData["before"]
-                if beforeFunc and type(beforeFunc) == "function" then
-                    Logger.debug("Running before function for %s", name)
-                    local s, e = pcall(beforeFunc, table.unpack(testData["beforeArgs"] or {}))
-                    if s then
-                        Logger.debug("Successfully completed before function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
-                    else
-                        Logger.error("Before function failed for %s, with error <%s>, skipping run...", name, e)
-                        testResults["result"] = "skipped"
-                        Tester._add_error_to_test_results(name, e, testResults)
-                    end
+                if not Tester._eval_meta_func(testData, "before", "test", name) then
+                    testResults["result"] = "skipped"
+                    Tester._add_error_to_test_results(name, e, testResults)
                 end
             end
 
@@ -191,29 +195,10 @@ function Tester.run()
                 end
 
                 -- NOTE: After functions are only run after a test is actually run, skipped tests do not run this
-                local afterFunc = testData["after"]
-                if afterFunc and type(afterFunc) == "function" then
-                    Logger.debug("Running after function for %s", name)
-                    local s, e = pcall(afterFunc, table.unpack(testData["afterArgs"] or {}))
-                    if s then
-                        Logger.debug("Successfully completed after function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
-                    else
-                        Logger.error("After function failed for %s, with error <%s>", name, e)
-                    end
-                end
+                Tester._eval_meta_func(testData, "after", "test", name)
             end
         end
-
-        local testerAfter = tester["after"]
-        if testerAfter and type(testerAfter) == "function" then
-            Logger.debug("Running after function for tester %s", testerName)
-            local s, e = pcall(testerAfter, table.unpack(tester["afterArgs"] or {}))
-            if s then
-                Logger.debug("Successfully completed tester after function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
-            else
-                Logger.error("Tester after function failed for %s, with error <%s>, skipping run of entire tester...", testerName, e)
-            end
-        end
+        Tester._eval_meta_func(tester, "after", "tester", testerName)
     end
 
     Tester._report_failed()
