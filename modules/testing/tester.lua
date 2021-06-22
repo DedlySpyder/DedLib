@@ -4,6 +4,7 @@ local Debug = require("__DedLib__/modules/debug")
 local Tester = {}
 
 Tester.Assert = require("assert")
+Tester.Mock = require("mock")
 
 --[[
 TODO - notes on tester
@@ -70,16 +71,6 @@ function Tester.add_tests(tests, testerName)
 end
 
 
-function Tester.get_mock_valid_entity(values)
-    if not values then values = {} end
-    if type(values) ~= "table" then
-        local msg = "Values for mock entity is not a table: " .. tostring(values)
-        Logger.fatal(msg)
-        error(msg)
-    end
-    values.valid = true
-    return values
-end
 
 function Tester.create_basic_test(testingFunc, expectedValue, ...)
     local testArgs = table.pack(...)

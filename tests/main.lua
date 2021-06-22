@@ -4,9 +4,10 @@ local Logger = require("modules/logger").create("Test_Main")
 local Tester = require("modules/testing/tester")
 
 local assert = require("tests/testing/assert")
+local mock = require("tests/testing/mock")
 local tester = require("tests/testing/tester")
 
-local stringify = require("tests/stringify")
+--local stringify = require("tests/stringify")
 local logger = require("tests/logger")
 
 local position = require("tests/position")
@@ -25,6 +26,7 @@ return function()
     Logger.info("Running Tester module validations")
     -- Test the tester first
     add_tester_results(assert())
+    add_tester_results(mock())
     add_tester_results(tester())
 
     Logger.info("Tester validation results: %s", tester_results)

@@ -8,30 +8,6 @@ local test_validations = {}
 local test_results = {results = {}} -- Tester.run() return value will be loaded into ["results"] before validations are run
 
 return function()
-    -- Mock Entity Tests
-    local function mockValidEntityTester(values, expectedEntity)
-        local mock = Tester.get_mock_valid_entity(values)
-        Tester.Assert.assert_equals(expectedEntity, mock, "Mock valid entity failed: " .. serpent.line(values))
-    end
-
-    test_validations["mock_entity_empty_arg_test"] = function()
-        mockValidEntityTester(nil, {valid = true})
-    end
-
-    test_validations["mock_entity_table_value_test"] = function()
-        mockValidEntityTester({foo = "bar"}, {valid = true, foo = "bar"})
-    end
-
-    test_validations["mock_entity_nontable_value_test"] = function()
-        local s, err = pcall(mockValidEntityTester, "foobar", "THIS SHOULDN'T EVEN SEE THE ASSERT")
-        err = Util.String.split(err, ":")[3]
-        if s or err ~= " Values for mock entity is not a table" then
-            error(string.format("Fatal mock valid entity test failed, status is <%s>, message is <%s>",
-                    tostring(s),
-                    err
-            ))
-        end
-    end
 
     -- TODO - Test for missing "test" in name in add_test
 
