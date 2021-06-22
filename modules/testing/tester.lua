@@ -1,5 +1,6 @@
 local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib", prefix = "Tester"}
 local Debug = require("__DedLib__/modules/debug")
+local Util = require("__DedLib__/modules/util")
 
 local Tester = {}
 
@@ -15,11 +16,11 @@ then the message will always be printed on an error, but the stacktrace will be 
 function Tester.reset()
     -- {name = name, tests = {[name] = func}}
     Tester._TESTERS = {}
-    Tester._RESULTS = {testers = {}, succeeded = {}, failed = {}}
+    Tester._RESULTS = {testers = {}, succeeded = {}, skipped = {}, failed = {}}
 end
 Tester.reset()
 
--- Expects: {succeeded = integer, failed = integer}
+-- Expects: {succeeded = integer, skipped = integer, failed = integer}
 function Tester.add_external_results(results)
     Tester._EXTERNAL_RESULTS = results
 end
@@ -83,6 +84,22 @@ function Tester.create_basic_test(testingFunc, expectedValue, ...)
     end
 end
 
+function Tester._add_error_to_test_results(testName, error, testResults)
+    if error and error["message"] and error["stacktrace"] then
+        testResults["error"] = tostring(error["message"])
+        testResults["stack"] = error["stacktrace"]
+    else
+        if type(error) == "table" then
+            error = serpent.line(error)
+        else
+            error = tostring(error)
+        end
+        testResults["error"] = error
+    end
+    Logger.error("Test %s failed: %s", testName, testResults["error"])
+    return testResults
+end
+
 function Tester.run()
     Logger.trace("Running all tests")
     for _, tester in ipairs(Tester._TESTERS) do
@@ -98,57 +115,61 @@ function Tester.run()
 
         local testerIndividualTestResults = {}
         local succeededTests = {}
+        local skippedTests = {}
         local failedTests = {}
-        local testerResults = {name = testerName, succeeded = succeededTests, failed = failedTests, tests = testerIndividualTestResults}
+        local testerResults = {name = testerName, succeeded = succeededTests, failed = failedTests, skipped = skippedTests, tests = testerIndividualTestResults}
         Tester._RESULTS["testers"][testerName] = testerResults
 
         for name, testData in pairs(tester["tests"]) do -- TODO - fixme - add before/after? (and on tester too while I'm, at it)
             Logger.debug("Running test %s", name)
             local func = testData["func"]
-            local args = testData["args"] or {}
-            local genArgsFunc = testData["generateArgsFunc"]
-            if genArgsFunc and type(genArgsFunc) == "function" then
-                if testData["generateArgsFuncArgs"] then
-                    args = genArgsFunc(table.unpack(testData["generateArgsFuncArgs"]))
-                else
-                    args = genArgsFunc()
-                end
-            end
-
-            local status, error = pcall(func, table.unpack(args))
-
             local funcLine = Debug.get_defined_string(func)
             local testResults = {
                 name = name,
-                result = status,
                 test_location = funcLine
             }
 
-            -- Index the results by name and by result
-            testerIndividualTestResults[name] = testResults
-            if status then
-                Logger.info("Test %s succeeded", name)
-                table.insert(succeededTests, testResults)
-                table.insert(Tester._RESULTS["succeeded"], testResults)
-            else
-                if error and error["message"] and error["stacktrace"] then
-                    local message = tostring(error["message"])
-
-                    Logger.error("Test %s failed: %s", name, message)
-                    testResults["error"] = message
-                    testResults["stack"] = error["stacktrace"]
+            local beforeFunc = testData["before"]
+            if beforeFunc and type(beforeFunc) == "function" then
+                Logger.debug("Running before function for %s", name)
+                local s, e = pcall(beforeFunc, table.unpack(testData["beforeArgs"] or {}))
+                if s then
+                    Logger.debug("Successfully completed before function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
                 else
-                    if type(error) == "table" then
-                        error = serpent.line(error)
-                    else
-                        error = tostring(error)
-                    end
-
-                    Logger.error("Test %s failed: %s", name, error)
-                    testResults["error"] = error
+                    Logger.error("Before function failed for %s, with error <%s>, skipping run...", name, e)
+                    testResults["result"] = "skipped"
+                    Tester._add_error_to_test_results(name, e, testResults)
                 end
-                table.insert(failedTests, testResults)
-                table.insert(Tester._RESULTS["failed"], testResults)
+            end
+
+            testerIndividualTestResults[name] = testResults
+            if testResults["result"] == "skipped" then
+                Logger.info("Test %s skipped", name)
+                table.insert(skippedTests, testResults)
+                table.insert(Tester._RESULTS["skipped"], testResults)
+            else
+                local args = testData["args"] or {}
+                local genArgsFunc = testData["generateArgsFunc"]
+                if genArgsFunc and type(genArgsFunc) == "function" then
+                    if testData["generateArgsFuncArgs"] then
+                        args = genArgsFunc(table.unpack(testData["generateArgsFuncArgs"]))
+                    else
+                        args = genArgsFunc()
+                    end
+                end
+
+                local status, error = pcall(func, table.unpack(args))
+                testResults["result"] = status
+
+                if status then
+                    Logger.info("Test %s succeeded", name)
+                    table.insert(succeededTests, testResults)
+                    table.insert(Tester._RESULTS["succeeded"], testResults)
+                else
+                    Tester._add_error_to_test_results(name, error, testResults)
+                    table.insert(failedTests, testResults)
+                    table.insert(Tester._RESULTS["failed"], testResults)
+                end
             end
         end
     end
@@ -167,13 +188,18 @@ function Tester._report_failed()
     Logger.info("Finished running tests:")
 
     local succeededCount = #Tester._RESULTS["succeeded"]
+    local skippedCount = #Tester._RESULTS["skipped"]
     local failedCount = #Tester._RESULTS["failed"]
     if Tester._EXTERNAL_RESULTS and Tester._EXTERNAL_RESULTS["succeeded"] and Tester._EXTERNAL_RESULTS["failed"] then
-        succeededCount = succeededCount + Tester._EXTERNAL_RESULTS["succeeded"]
-        failedCount = failedCount + Tester._EXTERNAL_RESULTS["failed"]
+        succeededCount = succeededCount + (Tester._EXTERNAL_RESULTS["succeeded"] or 0)
+        skippedCount = skippedCount + (Tester._EXTERNAL_RESULTS["skipped"] or 0)
+        failedCount = failedCount + (Tester._EXTERNAL_RESULTS["failed"] or 0)
     end
 
     Logger.info("    %d succeeded", succeededCount)
+    if skippedCount > 0 then
+        Logger.info("    %d skipped", skippedCount)
+    end
     Logger.info("    %d failed", failedCount)
 
     if Logger.level_is_less_than("debug") then
@@ -194,6 +220,19 @@ function Tester._report_failed()
                 Logger.debug(test["stack"])
             else
                 Logger.debug("No stacktrace for test failure")
+            end
+        end
+
+        local skippedTests = testerData["skipped"]
+        if #skippedTests > 0 then
+            Logger.info("")
+            Logger.info("%d skipped tests for %s", #skippedTests, testerName)
+        end
+        for _, test in ipairs(skippedTests) do
+            Logger.info("")
+            Logger.info("%s <%s> skipped because before function failed. Error: %s", test["name"], test["test_location"], test["error"])
+            if test["stack"] then
+                Logger.debug(test["stack"])
             end
         end
     end
