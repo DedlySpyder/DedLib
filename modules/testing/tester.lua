@@ -170,6 +170,18 @@ function Tester.run()
                     table.insert(failedTests, testResults)
                     table.insert(Tester._RESULTS["failed"], testResults)
                 end
+
+                -- NOTE: After functions are only run after a test is actually run, skipped tests do not run this
+                local afterFunc = testData["after"]
+                if afterFunc and type(afterFunc) == "function" then
+                    Logger.debug("Running after function for %s", name)
+                    local s, e = pcall(afterFunc, table.unpack(testData["afterArgs"] or {}))
+                    if s then
+                        Logger.debug("Successfully completed after function%s", Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
+                    else
+                        Logger.error("After function failed for %s, with error <%s>", name, e)
+                    end
+                end
             end
         end
     end
