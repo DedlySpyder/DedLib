@@ -261,7 +261,7 @@ function Tester._report_failed()
         end
         for _, test in ipairs(skippedTests) do
             Logger.info("")
-            Logger.info("%s <%s> skipped because before function failed. Error: %s", test["name"], test["test_location"], test["error"])
+            Logger.info("%s <%s> skipped. Error: %s", test["name"], test["test_location"], test["error"])
             if test["stack"] then
                 Logger.debug(test["stack"])
             end
