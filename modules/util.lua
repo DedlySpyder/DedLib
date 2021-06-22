@@ -24,5 +24,13 @@ function Util.String.ends_with(str, endStr)
     return str.sub(str, strLen - string.len(endStr) + 1, strLen) == endStr
 end
 
+function Util.String.capitalize(str)
+    if string.len(str) < 1 then
+        return str
+    end
+    local first = string.sub(str, 1, 1)
+    return string.upper(first) .. string.sub(str, 2)
+end
+
 
 return Util
