@@ -18,6 +18,11 @@ function Tester.reset()
 end
 Tester.reset()
 
+-- Expects: {succeeded = integer, failed = integer}
+function Tester.add_external_results(results)
+    Tester._EXTERNAL_RESULTS = results
+end
+
 function Tester.add_test(func, name)
     if not name then name = "Single Test #" .. #Tester._TESTERS end
     Logger.debug("Adding single test %s", name)
@@ -166,8 +171,16 @@ end
 function Tester._report_failed()
     Logger.info("")
     Logger.info("Finished running tests:")
-    Logger.info("    %d succeeded", #Tester._RESULTS["succeeded"])
-    Logger.info("    %d failed", #Tester._RESULTS["failed"])
+
+    local succeededCount = #Tester._RESULTS["succeeded"]
+    local failedCount = #Tester._RESULTS["failed"]
+    if Tester._EXTERNAL_RESULTS and Tester._EXTERNAL_RESULTS["succeeded"] and Tester._EXTERNAL_RESULTS["failed"] then
+        succeededCount = succeededCount + Tester._EXTERNAL_RESULTS["succeeded"]
+        failedCount = failedCount + Tester._EXTERNAL_RESULTS["failed"]
+    end
+
+    Logger.info("    %d succeeded", succeededCount)
+    Logger.info("    %d failed", failedCount)
 
     if Logger.level_is_less_than("debug") then
         Logger.info("")

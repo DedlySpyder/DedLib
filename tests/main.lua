@@ -29,15 +29,17 @@ return function()
 
     Logger.info("Tester validation results: %s", tester_results)
 
+    Tester.add_external_results(tester_results)
+
     -- Run other tests
     -- Modules are tested in dependency order (all depend on logger for example)
     --Tester.add_tests(stringify, "Stringify") --TODO stringify tester
-    --Tester.add_tests(logger, "Logger")
-    --
-    --Tester.add_tests(position, "Position")
-    --Tester.add_tests(area, "Area")
-    --
-    --Tester.add_tests(entity, "Entity")
-    --
-    --Tester.run()
+    Tester.add_tests(logger, "Logger")
+
+    Tester.add_tests(position, "Position")
+    Tester.add_tests(area, "Area")
+
+    Tester.add_tests(entity, "Entity")
+
+    Tester.run()
 end
