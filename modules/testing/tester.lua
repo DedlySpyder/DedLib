@@ -89,7 +89,7 @@ function Tester.create_basic_test(testingFunc, expectedValue, ...)
     end
 end
 
-function Tester._add_error_to_test_results(testName, error, testResults)
+function Tester._add_error_to_test_results(testName, error, testResults, skipLog)
     if error and error["message"] and error["stacktrace"] then
         testResults["error"] = tostring(error["message"])
         testResults["stack"] = error["stacktrace"]
@@ -101,7 +101,9 @@ function Tester._add_error_to_test_results(testName, error, testResults)
         end
         testResults["error"] = error
     end
-    Logger.error("Test %s failed: %s", testName, testResults["error"])
+    if not skipLog then
+        Logger.error("Test %s failed: %s", testName, testResults["error"])
+    end
     return testResults
 end
 
@@ -120,7 +122,7 @@ function Tester._eval_meta_func(data, funcName, layerType, layerName)
                     e,
                     Util.ternary(string.find(funcName, "before") == nil, "", ", skipping...")
             )
-            return Tester._add_error_to_test_results(layerName, e, {})["error"]
+            return Tester._add_error_to_test_results(layerName, e, {}, true)["error"]
         end
         Logger.debug("Successfully completed %s before function%s", layerType, Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
     end
