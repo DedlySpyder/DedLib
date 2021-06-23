@@ -113,7 +113,10 @@ function Tester._eval_meta_func(data, funcName, layerType, layerName)
     local func = data[funcName]
     if func and type(func) == "function" then
         Logger.debug("Running %s function for %s %s", funcName, layerType, layerName)
-        local s, e = pcall(func, table.unpack(data[funcName .. "Args"] or {}))
+
+        local args = data[funcName .. "Args"] or {}
+        if type(args) ~= "table" or #args == 0 then args = {args} end -- Args should be a list of args
+        local s, e = pcall(func, table.unpack(args))
         if not s then
             Logger.error("%s %s function failed for %s, with error <%s>",
                     Util.String.capitalize(layerType),
