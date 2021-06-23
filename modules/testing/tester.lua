@@ -101,15 +101,13 @@ function Tester._add_error_to_test_results(testName, error, testResults)
 end
 
 -- Example: {}, "before|after", "tester|test", "testName"
--- Returns status of func, false should skip tests
+-- Returns error message, or nil if it ran successfully
 function Tester._eval_meta_func(data, funcName, layerType, layerName)
     local func = data[funcName]
     if func and type(func) == "function" then
         Logger.debug("Running %s function for %s %s", funcName, layerType, layerName)
         local s, e = pcall(func, table.unpack(data[funcName .. "Args"] or {}))
-        if s then
-            Logger.debug("Successfully completed %s before function%s", layerType, Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
-        else
+        if not s then
             Logger.error("%s %s function failed for %s, with error <%s>",
                     Util.String.capitalize(layerType),
                     funcName,
@@ -117,10 +115,11 @@ function Tester._eval_meta_func(data, funcName, layerType, layerName)
                     e,
                     Util.ternary(string.find(funcName, "before") == nil, "", ", skipping...")
             )
+            return Tester._add_error_to_test_results(layerName, e, {})["error"]
         end
-        return s, Tester._add_error_to_test_results(layerName, e, {})["error"]
+        Logger.debug("Successfully completed %s before function%s", layerType, Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
     end
-    return true
+    return nil
 end
 
 function Tester.run()
@@ -143,7 +142,7 @@ function Tester.run()
         local testerResults = {name = testerName, succeeded = succeededTests, failed = failedTests, skipped = skippedTests, tests = testerIndividualTestResults}
         Tester._RESULTS["testers"][testerName] = testerResults
 
-        local _, beforeTesterError = Tester._eval_meta_func(tester, "before", "tester", testerName)
+        local beforeTesterError = Tester._eval_meta_func(tester, "before", "tester", testerName)
 
         for name, testData in pairs(tester["tests"]) do
             Logger.debug("Running test %s", name)
@@ -154,14 +153,15 @@ function Tester.run()
                 test_location = funcLine
             }
 
-            if beforeTesterError then
-                testResults["result"] = "skipped"
-                testResults["error"] = "Tester skipped: " .. beforeTesterError
-            else
-                if not Tester._eval_meta_func(testData, "before", "test", name) then
+            if beforeTesterError == nil then
+                local e = Tester._eval_meta_func(testData, "before", "test", name)
+                if e ~= nil then
                     testResults["result"] = "skipped"
                     Tester._add_error_to_test_results(name, e, testResults)
                 end
+            else
+                testResults["result"] = "skipped"
+                testResults["error"] = "Tester skipped: " .. beforeTesterError
             end
 
 
