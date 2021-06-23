@@ -25,19 +25,24 @@ function Tester.add_external_results(results)
     Tester._EXTERNAL_RESULTS = results
 end
 
-function Tester.add_test(func, name)
+function Tester.add_test(data, name)
     if not name then name = "Single Test #" .. #Tester._TESTERS end
     if not string.find(string.lower(name), "test") then
         name = name .. " Test"
     end
     Logger.debug("Adding single test %s", name)
-    return Tester.add_tests({[name] = func}, name .. " Tester")
+    return Tester.add_tests({[name] = data}, name .. " Tester")
 end
 
-function Tester.add_tests(tests, testerName)
+function Tester.add_tests(tests, testerData)
     if type(tests) == "table" then
-        local tester = {}
-        tester["name"] = testerName or "Unnamed Tester #" .. #Tester._TESTERS
+        if type(testerData) ~= "table" then testerData = {name = testerData} end -- Assume non-table is just a name
+        local tester = table.deepcopy(testerData)
+        if tester["name"] == nil then
+            tester["name"] = "Unnamed Tester #" .. #Tester._TESTERS
+        elseif type(tester["name"]) ~= "string" then
+            tester["name"] = serpent.line(tester["name"])
+        end
 
         local testerName = tester["name"]
         Logger.debug("Creating tester for %s", testerName)
