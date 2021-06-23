@@ -205,10 +205,10 @@ function Tester.run()
                 end
 
                 -- NOTE: After functions are only run after a test is actually run, skipped tests do not run this
-                Tester._eval_meta_func(testData, "after", "test", name)
+                Tester._eval_meta_func(testData, "after", "test", name) --TODO - maybe - should these warn post run when failing?
             end
         end
-        Tester._eval_meta_func(tester, "after", "tester", testerName)
+        Tester._eval_meta_func(tester, "after", "tester", testerName) --TODO - maybe - should these warn post run when failing?
     end
 
     Tester._report_failed()

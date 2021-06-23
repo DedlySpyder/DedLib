@@ -7,36 +7,44 @@ local Util = require("modules/util")
 local test_validations = {}
 local test_results = {results = {}} -- Tester.run() return value will be loaded into ["results"] before validations are run
 
-return function()
-    -- Tester Add Test(s) Tests
-    local addValidationForBasicAddTest = function(validationName, testerName, testName, expectedResult, errorMessage)
-        test_validations[validationName] = function()
-            local successOrFail = Util.ternary(expectedResult, "succeeded", "failed")
-            local testerResults = test_results["results"]["testers"][testerName]
-            local testResult = testerResults["tests"][testName]
 
-            Tester.Assert.assert_equals(testName, testResult.name, "Test <name> assert, failed")
-            Tester.Assert.assert_equals(expectedResult, testResult.result, "Test <result> assert, failed")
-            Tester.Assert.assert_starts_with("__DedLib__/tests/testing/tester.lua:", testResult.test_location, "Test <result> assert, failed")
-            Tester.Assert.assert_contains_exactly(
-                    testResult,
-                    testerResults[successOrFail],
-                    string.format("Tester %s list contains assert, failed", successOrFail)
-            )
-            Tester.Assert.assert_contains_exactly(
-                    testResult,
-                    test_results["results"][successOrFail],
-                    string.format("Main %s list contains assert, failed", successOrFail)
-            )
+local addValidationForBasicAddTest = function(validationName, testerName, testName, expectedResult, errorMessage)
+    test_validations[validationName] = function()
+        local resultsKey = expectedResult -- Keep this value if it's a string, otherwise reassign it
+        if expectedResult == true then
+            resultsKey = "succeeded"
+        elseif expectedResult == false then
+            resultsKey = "failed"
+        end
 
-            -- Only check for failures
-            if not expectedResult then
-                Tester.Assert.assert_ends_with(errorMessage, testResult.error, "Test <error> assert, failed")
-            end
+        local testerResults = test_results["results"]["testers"][testerName]
+        local testResult = testerResults["tests"][testName]
+
+        Tester.Assert.assert_equals(testName, testResult.name, "Test <name> assert, failed")
+        Tester.Assert.assert_equals(expectedResult, testResult.result, "Test <result> assert, failed")
+        Tester.Assert.assert_starts_with("__DedLib__/tests/testing/tester.lua:", testResult.test_location, "Test <result> assert, failed")
+        Tester.Assert.assert_contains_exactly(
+                testResult,
+                testerResults[resultsKey],
+                string.format("Tester %s list contains assert, failed", resultsKey)
+        )
+        Tester.Assert.assert_contains_exactly(
+                testResult,
+                test_results["results"][resultsKey],
+                string.format("Main %s list contains assert, failed", resultsKey)
+        )
+
+        -- Only check for failures & skipped
+        if expectedResult ~= true then
+            Tester.Assert.assert_ends_with(errorMessage, testResult.error, "Test <error> assert, failed")
         end
     end
-    Logger.trace("Loading tests into tester:")
+end
 
+
+return function()
+    -- Tester Add Test(s) Tests
+    Logger.trace("Loading tests into tester:")
     Tester.add_test(function() Logger.info("Successful single test, unnamed") end)
     addValidationForBasicAddTest(
             "add_test_successful_unnamed",
@@ -220,6 +228,328 @@ return function()
 
         Tester.Assert.assert_equals(nil, test_results["results"]["testers"][testerName][testName], "Test missing test, found")
     end
+
+    --TODO - test add_tests with testerData
+
+    -- Before/After Tests
+    -- Note: returned value tests do not validate the value at this point, as they just print it currently
+    Tester.add_tests({
+        test_successful_before_func = {
+            func = function() end,
+            before = function() Logger.info("Successful before func run") end
+        },
+        test_successful_before_return_func = {
+            func = function() end,
+            before = function() Logger.info("Successful before func run with return"); return "returned_value" end
+        },
+        test_successful_before_func_args = {
+            func = function() end,
+            before = function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for before func: <" .. value1 .. "><" .. value2 .. ">") end
+                Logger.info("Successful before func run")
+            end,
+            beforeArgs = {"foo", "bar"}
+        },
+        test_successful_before_return_func_args = {
+            func = function() end,
+            before = function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for before func: <" .. value1 .. "><" .. value2 .. ">") end
+                Logger.info("Successful before func run")
+                return "returned_value"
+            end,
+            beforeArgs = {"foo", "bar"}
+        },
+        test_failed_before_func = {
+            func = function() end,
+            before = function() error("Failed before func run") end
+        },
+        test_failed_before_func_args = {
+            func = function() end,
+            before = function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for before func: <" .. value1 .. "><" .. value2 .. ">") end
+                error("Failed before func run, with args")
+            end,
+            beforeArgs = {"foo", "bar"}
+        }
+    }, "before_func_tester")
+    addValidationForBasicAddTest(
+            "test_successful_before_func",
+            "before_func_tester",
+            "test_successful_before_func",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_before_return_func",
+            "before_func_tester",
+            "test_successful_before_return_func",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_before_func_args",
+            "before_func_tester",
+            "test_successful_before_func_args",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_before_return_func_args",
+            "before_func_tester",
+            "test_successful_before_return_func_args",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_failed_before_func",
+            "before_func_tester",
+            "test_failed_before_func",
+            "skipped",
+            "Failed before func run"
+    )
+    addValidationForBasicAddTest(
+            "test_failed_before_func_args",
+            "before_func_tester",
+            "test_failed_before_func_args",
+            "skipped",
+            "Failed before func run, with args"
+    )
+
+    local afterFuncTesterTests = {
+        test_successful_after_func = {
+            func = function() end,
+            after = function() Logger.info("Successful after func run") end
+        },
+        test_successful_after_return_func = {
+            func = function() end,
+            after = function() Logger.info("Successful after func run with return"); return "returned_value" end
+        },
+        test_successful_after_func_args = {
+            func = function() end,
+            after = function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for after func: <" .. value1 .. "><" .. value2 .. ">") end
+                Logger.info("Successful after func run")
+            end,
+            afterArgs = {"foo", "bar"}
+        },
+        test_successful_after_return_func_args = {
+            func = function() end,
+            after = function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for after func: <" .. value1 .. "><" .. value2 .. ">") end
+                Logger.info("Successful after func run")
+                return "returned_value"
+            end,
+            afterArgs = {"foo", "bar"}
+        },
+        test_failed_after_func = {
+            func = function() end,
+            after = function() error("Failed after func run") end
+        },
+        test_failed_after_func_args = {
+            func = function() end,
+            after = function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for after func: <" .. value1 .. "><" .. value2 .. ">") end
+                error("Failed after func run, with args")
+            end,
+            afterArgs = {"foo", "bar"}
+        }
+    }
+    Tester.add_tests(afterFuncTesterTests, "after_func_tester")
+    -- After tests don't have an impact on the status of the test
+    for name, _ in pairs(afterFuncTesterTests) do
+        addValidationForBasicAddTest(
+                name,
+                "after_func_tester",
+                name,
+                true
+        )
+    end
+
+
+    -- Before Tester Tests
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "before_tester_func_tester",
+        before = function() Logger.info("Successful before tester func run") end
+    })
+    addValidationForBasicAddTest(
+            "before_tester_func_tester",
+            "before_tester_func_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "before_tester_return_func_tester",
+        before = function() Logger.info("Successful before tester func run"); return "returned_value" end
+    })
+    addValidationForBasicAddTest(
+            "before_tester_return_func_tester",
+            "before_tester_return_func_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "before_tester_func_args_tester",
+        before = function(value1, value2)
+            if value1 == nil or value2 == nil then error("Missing arg(s) for before tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            Logger.info("Successful before tester func run")
+        end,
+        beforeArgs = {"foo", "bar"}
+    })
+    addValidationForBasicAddTest(
+            "before_tester_func_args_tester",
+            "before_tester_func_args_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "before_tester_return_func_args_tester",
+        before = function(value1, value2)
+            if value1 == nil or value2 == nil then error("Missing arg(s) for before tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            Logger.info("Successful before tester func run")
+            return "returned_value"
+        end,
+        beforeArgs = {"foo", "bar"}
+    })
+    addValidationForBasicAddTest(
+            "before_tester_return_func_args_tester",
+            "before_tester_return_func_args_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "before_tester_func_failed_tester",
+        before = function() error("Failed before tester func run") end
+    })
+    addValidationForBasicAddTest(
+            "before_tester_func_failed_tester",
+            "before_tester_func_failed_tester",
+            "test",
+            "skipped",
+            "Failed before tester func run"
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "before_tester_func_failed_args_tester",
+        before = function(value1, value2)
+            if value1 == nil or value2 == nil then error("Missing arg(s) for before tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            Logger.info("Successful before tester func run")
+            error("Failed before tester func run, with args")
+        end,
+        beforeArgs = {"foo", "bar"}
+    })
+    addValidationForBasicAddTest(
+            "before_tester_func_failed_args_tester",
+            "before_tester_func_failed_args_tester",
+            "test",
+            "skipped",
+            "Failed before tester func run, with args"
+    )
+
+
+    -- After Tester tests
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "after_tester_func_tester",
+        after = function() Logger.info("Successful after tester func run") end
+    })
+    addValidationForBasicAddTest(
+            "after_tester_func_tester",
+            "after_tester_func_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "after_tester_return_func_tester",
+        after = function() Logger.info("Successful after tester func run"); return "returned_value" end
+    })
+    addValidationForBasicAddTest(
+            "after_tester_return_func_tester",
+            "after_tester_return_func_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "after_tester_func_args_tester",
+        after = function(value1, value2)
+            if value1 == nil or value2 == nil then error("Missing arg(s) for after tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            Logger.info("Successful after tester func run")
+        end,
+        afterArgs = {"foo", "bar"}
+    })
+    addValidationForBasicAddTest(
+            "after_tester_func_args_tester",
+            "after_tester_func_args_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "after_tester_return_func_args_tester",
+        after = function(value1, value2)
+            if value1 == nil or value2 == nil then error("Missing arg(s) for after tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            Logger.info("Successful after tester func run")
+            return "returned_value"
+        end,
+        afterArgs = {"foo", "bar"}
+    })
+    addValidationForBasicAddTest(
+            "after_tester_return_func_args_tester",
+            "after_tester_return_func_args_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "after_tester_func_failed_tester",
+        after = function() error("Failed after tester func run") end
+    })
+    addValidationForBasicAddTest(
+            "after_tester_func_failed_tester",
+            "after_tester_func_failed_tester",
+            "test",
+            true
+    )
+
+    Tester.add_tests({
+        test = function() end
+    }, {
+        name = "after_tester_func_failed_args_tester",
+        after = function(value1, value2)
+            if value1 == nil or value2 == nil then error("Missing arg(s) for after tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            Logger.info("Successful after tester func run")
+            error("Failed after tester func run, with args")
+        end,
+        afterArgs = {"foo", "bar"}
+    })
+    addValidationForBasicAddTest(
+            "after_tester_func_failed_args_tester",
+            "after_tester_func_failed_args_tester",
+            "test",
+            true
+    )
 
 
 
