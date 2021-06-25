@@ -43,6 +43,64 @@ end
 
 
 return function()
+    -- Add error to test results Tests
+    test_validations["test_add_error_to_test_results_string"] = function()
+        local error = "error_message"
+        local expected = {error = error}
+        local actual = Tester._add_error_to_test_results("name", error, {})
+
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+
+    test_validations["test_add_error_to_test_results_number"] = function()
+        local error = 42
+        local expected = {error = "42"}
+        local actual = Tester._add_error_to_test_results("name", error, {})
+
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+
+    test_validations["test_add_error_to_test_results_nil"] = function()
+        local error = nil
+        local expected = {error = "nil"}
+        local actual = Tester._add_error_to_test_results("name", error, {})
+
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+
+    test_validations["test_add_error_to_test_results_random_table"] = function()
+        local error = {foo = "bar"}
+        local expected = {error = serpent.line(error)}
+        local actual = Tester._add_error_to_test_results("name", error, {})
+
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+
+    test_validations["test_add_error_to_test_results_err_message_only"] = function()
+        local error = {message = "error_message"}
+        local expected = {error = serpent.line(error)}
+        local actual = Tester._add_error_to_test_results("name", error, {})
+
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+
+    test_validations["test_add_error_to_test_results_stacktrace_only"] = function()
+        local error = {stacktrace = "stacktrace"}
+        local expected = {error = serpent.line(error)}
+        local actual = Tester._add_error_to_test_results("name", error, {})
+
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+
+    test_validations["test_add_error_to_test_results_formatted_correctly"] = function()
+        local error = {message = "error_message", stacktrace = "stacktrace"}
+        local expected = {error = "error_message", stack = "stacktrace"}
+        local actual = Tester._add_error_to_test_results("name", error, {})
+
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+
+
     -- Tester Add Test(s) Tests
     Logger.trace("Loading tests into tester:")
     Tester.add_test(function() Logger.info("Successful single test, unnamed") end)

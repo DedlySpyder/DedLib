@@ -90,7 +90,8 @@ function Tester.create_basic_test(testingFunc, expectedValue, ...)
 end
 
 function Tester._add_error_to_test_results(testName, error, testResults, skipLog)
-    if error and error["message"] and error["stacktrace"] then
+    local errorIsTable = type(error) == "table"
+    if error and errorIsTable and error["message"] and error["stacktrace"] then
         testResults["error"] = tostring(error["message"])
         testResults["stack"] = error["stacktrace"]
     else
