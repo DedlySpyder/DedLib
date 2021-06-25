@@ -8,6 +8,13 @@ local test_validations = {}
 local test_results = {results = {}} -- Tester.run() return value will be loaded into ["results"] before validations are run
 
 
+local addValidationForAddErrorToTestResults = function(validationName, error, expected)
+    test_validations[validationName] = function()
+        local actual = Tester._add_error_to_test_results("name", error, {})
+        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+end
+
 local addValidationForBasicAddTest = function(validationName, testerName, testName, expectedResult, errorMessage)
     test_validations[validationName] = function()
         local resultsKey = expectedResult -- Keep this value if it's a string, otherwise reassign it
@@ -44,61 +51,41 @@ end
 
 return function()
     -- Add error to test results Tests
-    test_validations["test_add_error_to_test_results_string"] = function()
-        local error = "error_message"
-        local expected = {error = error}
-        local actual = Tester._add_error_to_test_results("name", error, {})
-
-        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
-    end
-
-    test_validations["test_add_error_to_test_results_number"] = function()
-        local error = 42
-        local expected = {error = "42"}
-        local actual = Tester._add_error_to_test_results("name", error, {})
-
-        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
-    end
-
-    test_validations["test_add_error_to_test_results_nil"] = function()
-        local error = nil
-        local expected = {error = "nil"}
-        local actual = Tester._add_error_to_test_results("name", error, {})
-
-        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
-    end
-
-    test_validations["test_add_error_to_test_results_random_table"] = function()
-        local error = {foo = "bar"}
-        local expected = {error = serpent.line(error)}
-        local actual = Tester._add_error_to_test_results("name", error, {})
-
-        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
-    end
-
-    test_validations["test_add_error_to_test_results_err_message_only"] = function()
-        local error = {message = "error_message"}
-        local expected = {error = serpent.line(error)}
-        local actual = Tester._add_error_to_test_results("name", error, {})
-
-        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
-    end
-
-    test_validations["test_add_error_to_test_results_stacktrace_only"] = function()
-        local error = {stacktrace = "stacktrace"}
-        local expected = {error = serpent.line(error)}
-        local actual = Tester._add_error_to_test_results("name", error, {})
-
-        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
-    end
-
-    test_validations["test_add_error_to_test_results_formatted_correctly"] = function()
-        local error = {message = "error_message", stacktrace = "stacktrace"}
-        local expected = {error = "error_message", stack = "stacktrace"}
-        local actual = Tester._add_error_to_test_results("name", error, {})
-
-        Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
-    end
+    addValidationForAddErrorToTestResults(
+            "test_add_error_to_test_results_string",
+            "error_message",
+            {error = "error_message"}
+    )
+    addValidationForAddErrorToTestResults(
+            "test_add_error_to_test_results_number",
+            42,
+            {error = "42"}
+    )
+    addValidationForAddErrorToTestResults(
+            "test_add_error_to_test_results_nil",
+            nil,
+            {error = "nil"}
+    )
+    addValidationForAddErrorToTestResults(
+            "test_add_error_to_test_results_random_table",
+            {foo = "bar"},
+            {error = serpent.line({foo = "bar"})}
+    )
+    addValidationForAddErrorToTestResults(
+            "test_add_error_to_test_results_err_message_only",
+            {message = "error_message"},
+            {error = serpent.line({message = "error_message"})}
+    )
+    addValidationForAddErrorToTestResults(
+            "test_add_error_to_test_results_stacktrace_only",
+            {stacktrace = "stacktrace"},
+            {error = serpent.line({stacktrace = "stacktrace"})}
+    )
+    addValidationForAddErrorToTestResults(
+            "test_add_error_to_test_results_formatted_correctly",
+            {message = "error_message", stacktrace = "stacktrace"},
+            {error = "error_message", stack = "stacktrace"}
+    )
 
 
     -- Tester Add Test(s) Tests
