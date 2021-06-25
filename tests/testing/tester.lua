@@ -1,7 +1,6 @@
 -- Yes, this is a group of tests for the tester
 local Logger = require("modules/logger").create("Tester_Test")
 local Tester = require("modules/testing/tester")
-local Util = require("modules/util")
 
 
 local test_validations = {}
@@ -12,6 +11,13 @@ local addValidationForAddErrorToTestResults = function(validationName, error, ex
     test_validations[validationName] = function()
         local actual = Tester._add_error_to_test_results("name", error, {})
         Tester.Assert.assert_equals(expected, actual, "Test <test results> assert, failed")
+    end
+end
+
+local addValidationForEvalMetaFunc = function(validationName, func, args, expected)
+    test_validations[validationName] = function()
+        local actual = Tester._eval_meta_func({func = func, funcArgs = args}, "func", "type", "name")
+        Tester.Assert.assert_ends_with(expected, actual, "Test <eval meta result> assert, failed")
     end
 end
 
@@ -85,6 +91,57 @@ return function()
             "test_add_error_to_test_results_formatted_correctly",
             {message = "error_message", stacktrace = "stacktrace"},
             {error = "error_message", stack = "stacktrace"}
+    )
+
+
+    -- Eval meta func (before/after) Tests
+    addValidationForEvalMetaFunc("test_eval_meta_func__no_func", nil, nil, nil)
+    addValidationForEvalMetaFunc("test_eval_meta_func__not_func", "i'm not a function", nil, nil)
+    addValidationForEvalMetaFunc(
+            "test_eval_meta_func__normal_func",
+            function() Logger.info("no-op") end,
+            nil,
+            nil
+    )
+    addValidationForEvalMetaFunc(
+            "test_eval_meta_func__normal_func_args",
+            function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for func: <" .. value1 .. "><" .. value2 .. ">") end
+                Logger.info("no-op")
+            end,
+            {"foo", "bar"},
+            nil
+    )
+    addValidationForEvalMetaFunc(
+            "test_eval_meta_func__normal_func_returned_value",
+            function() Logger.info("no-op"); return "returned_value" end,
+            nil,
+            nil
+    )
+    addValidationForEvalMetaFunc(
+            "test_eval_meta_func__normal_func_args_returned_value",
+            function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for func: <" .. value1 .. "><" .. value2 .. ">") end
+                Logger.info("no-op")
+                return "returned_value"
+            end,
+            {"foo", "bar"},
+            nil
+    )
+    addValidationForEvalMetaFunc(
+            "test_eval_meta_func__failing_func",
+            function() error("Failing meta func") end,
+            nil,
+            "Failing meta func"
+    )
+    addValidationForEvalMetaFunc(
+            "test_eval_meta_func__failing_func_args",
+            function(value1, value2)
+                if value1 == nil or value2 == nil then error("Missing arg(s) for func: <" .. value1 .. "><" .. value2 .. ">") end
+                error("Failing meta func, with args")
+            end,
+            {"foo", "bar"},
+            "Failing meta func, with args"
     )
 
 
