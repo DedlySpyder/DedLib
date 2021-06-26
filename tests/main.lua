@@ -7,7 +7,7 @@ local assert = require("tests/testing/assert")
 local mock = require("tests/testing/mock")
 local tester = require("tests/testing/tester")
 
---local stringify = require("tests/stringify")
+local stringify = require("tests/stringify")
 local logger = require("tests/logger")
 
 local position = require("tests/position")
@@ -19,6 +19,13 @@ local tester_results = {succeeded = 0, failed = 0}
 local add_tester_results = function(results)
     tester_results["succeeded"] = tester_results["succeeded"] + results["succeeded"]
     tester_results["failed"] = tester_results["failed"] + results["failed"]
+end
+
+if remote.interfaces["freeplay"] then
+    script.on_init(function() -- Stringify tests can't have the freeplay scenario
+        remote.call("freeplay", "set_disable_crashsite", true)
+        remote.call("freeplay", "set_skip_intro", true)
+    end)
 end
 
 return function()
@@ -35,13 +42,15 @@ return function()
 
     -- Run other tests
     -- Modules are tested in dependency order (all depend on logger for example)
-    --Tester.add_tests(stringify, "Stringify") --TODO stringify tester
-    Tester.add_tests(logger, "Logger")
-
-    Tester.add_tests(position, "Position")
-    Tester.add_tests(area, "Area")
-
-    Tester.add_tests(entity, "Entity")
-
+    Tester.add_tests(stringify, "Stringify")
+    --Tester.add_tests(logger, "Logger")
+    --
+    --Tester.add_tests(position, "Position")
+    --Tester.add_tests(area, "Area")
+    --
+    --Tester.add_tests(entity, "Entity")
+    --
     Tester.run()
+
+    Logger.info(Stringify.to_string(debug.getinfo(Stringify.Formatters.LuaEntity)))
 end
