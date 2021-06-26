@@ -186,9 +186,9 @@ function Tester.run()
                 local genArgsFunc = testData["generateArgsFunc"]
                 if genArgsFunc and type(genArgsFunc) == "function" then
                     if testData["generateArgsFuncArgs"] then
-                        args = genArgsFunc(table.unpack(testData["generateArgsFuncArgs"]))
+                        args = {genArgsFunc(table.unpack(testData["generateArgsFuncArgs"]))}
                     else
-                        args = genArgsFunc()
+                        args = {genArgsFunc()}
                     end
                 end
 
