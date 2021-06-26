@@ -99,15 +99,15 @@ end
 
 -- Start of actual functions
 function Stringify.is_lua_object(object)
-    return object ~= nil and type(rawget(object, "__self")) == "userdata" and getmetatable(object) == "private"
+    return object ~= nil
+            and type(object) == "table"
+            and type(rawget(object, "__self")) == "userdata"
+            and getmetatable(object) == "private"
 end
 
 function Stringify.to_string(arg, block, notFirst)
     local argType = type(arg)
-    if argType == "string" then
-        return arg
-
-    elseif argType == "table" then
+    if argType == "table" then
         if Stringify.is_lua_object(arg) then
             local oName = arg.object_name
             if Stringify._ALWAYS_VALID[oName] or arg.valid then
@@ -130,18 +130,26 @@ function Stringify.to_string(arg, block, notFirst)
         for k, v in pairs(arg) do
             t[k] = Stringify.to_string(v, block, true)
         end
-        if notFirst then
-            return t
-        else
-            if block then
-                return Stringify._SERPENT_BLOCK(t)
-            else
-                return Stringify._SERPENT_LINE(t)
-            end
-        end
+        arg = t
+    elseif argType == "function" then
+        argType = "string"
+        arg = "function"
+    end
 
+    if notFirst then
+        return arg
     else
-        return tostring(arg)
+        if argType == "table" then
+            if block then
+                return Stringify._SERPENT_BLOCK(arg)
+            else
+                return Stringify._SERPENT_LINE(arg)
+            end
+        elseif argType ~= "string" then
+            return tostring(arg)
+        else
+            return arg
+        end
     end
 end
 
