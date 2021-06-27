@@ -43,12 +43,12 @@ return function()
     -- Run other tests
     -- Modules are tested in dependency order (all depend on logger for example)
     Tester.add_tests(stringify, "Stringify")
-    --Tester.add_tests(logger, "Logger")
-    --
-    --Tester.add_tests(position, "Position")
-    --Tester.add_tests(area, "Area")
-    --
-    --Tester.add_tests(entity, "Entity")
-    --
+    Tester.add_tests(logger, "Logger")
+
+    Tester.add_tests(position, "Position")
+    Tester.add_tests(area, "Area")
+
+    Tester.add_tests(entity, "Entity")
+
     Tester.run()
 end
