@@ -106,7 +106,7 @@ toStringTest("float", 4.2, "4.2")
 toStringTest("nil", nil, "nil")
 toStringTest("true", true, "true")
 toStringTest("false", false, "false")
--- This is just weird because of hte test generator
+-- This is just weird because of the test generator
 toStringTest("function", function() return function() end end, "function")
 
 toStringTest("basic_table", {foo = "bar"}, serpent.line({foo = "bar"}))
@@ -156,15 +156,25 @@ toStringTest(
         "<LuaEntity>{Invalid}"
 )
 
--- to_string tests
---[[
-test formatters separately (por que no dos?)
-lists of lua_objects
-invalid lua_object
-]]--
 
+-- Formatter Tests
+for objectName, _ in pairs(Stringify.Formatters) do -- Just making sure these all run fine and have the correct main type at least
+    if not Util.String.starts_with(objectName, "_") then
+        local name = "test_formatters__" .. objectName
+        local genArgsFunc = LUA_OBJECTS[objectName]
 
--- TODO - test formatters (make sure they don't fail for valid/invalid/invalid for read & check for <> value
+        StringifyTests[name] = {
+            before = function()
+                Assert.assert_not_nil(genArgsFunc, "Missing generator for " .. objectName)
+            end,
+            generateArgsFunc = genArgsFunc,
+            func = function(arg)
+                local actual = Stringify.Formatters._run_formatter(objectName, arg)
+                Assert.assert_starts_with("<" .. objectName .. ">", actual)
+            end
+        }
+    end
+end
 
 
 return StringifyTests
