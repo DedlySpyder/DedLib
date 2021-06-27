@@ -1,5 +1,6 @@
 local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib", prefix = "Tester"}
 local Debug = require("__DedLib__/modules/debug")
+local Table = require("__DedLib__/modules/table")
 local Util = require("__DedLib__/modules/util")
 
 local Tester = {}
@@ -191,28 +192,33 @@ function Tester.run()
                 local args = testData["args"] or {}
                 local genArgsFunc = testData["generateArgsFunc"]
                 if genArgsFunc and type(genArgsFunc) == "function" then
-                    if testData["generateArgsFuncArgs"] then
-                        args = {genArgsFunc(table.unpack(testData["generateArgsFuncArgs"]))}
+                    local pcallVals = {pcall(genArgsFunc, table.unpack(testData["generateArgsFuncArgs"] or {}))}
+                    if pcallVals[1] then
+                        args = Table.shift(pcallVals)
                     else
-                        args = {genArgsFunc()}
+                        testResults["result"] = "skipped"
+                        Tester._add_error_to_test_results(name, pcallVals[2], testResults)
+                        testResults["error"] = "Tester skipped, failed to generate args: " .. testResults["error"]
                     end
                 end
 
-                local status, error = pcall(func, table.unpack(args))
-                testResults["result"] = status
+                if not processSkippedTest(testResults, name) then
+                    local status, error = pcall(func, table.unpack(args))
+                    testResults["result"] = status
 
-                if status then
-                    Logger.info("Test %s succeeded", name)
-                    table.insert(succeededTests, testResults)
-                    table.insert(Tester._RESULTS["succeeded"], testResults)
-                else
-                    Tester._add_error_to_test_results(name, error, testResults)
-                    table.insert(failedTests, testResults)
-                    table.insert(Tester._RESULTS["failed"], testResults)
+                    if status then
+                        Logger.info("Test %s succeeded", name)
+                        table.insert(succeededTests, testResults)
+                        table.insert(Tester._RESULTS["succeeded"], testResults)
+                    else
+                        Tester._add_error_to_test_results(name, error, testResults)
+                        table.insert(failedTests, testResults)
+                        table.insert(Tester._RESULTS["failed"], testResults)
+                    end
+
+                    -- NOTE: After functions are only run after a test is actually run, skipped tests do not run this
+                    Tester._eval_meta_func(testData, "after", "test", name) --TODO - maybe - should these warn post run when failing?
                 end
-
-                -- NOTE: After functions are only run after a test is actually run, skipped tests do not run this
-                Tester._eval_meta_func(testData, "after", "test", name) --TODO - maybe - should these warn post run when failing?
             end
         end
         Tester._eval_meta_func(tester, "after", "tester", testerName) --TODO - maybe - should these warn post run when failing?
