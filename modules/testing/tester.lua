@@ -153,6 +153,16 @@ function Tester.run()
         local testerResults = {name = testerName, succeeded = succeededTests, failed = failedTests, skipped = skippedTests, tests = testerIndividualTestResults}
         Tester._RESULTS["testers"][testerName] = testerResults
 
+        -- Returns true if the test was skipped and processed
+        local processSkippedTest = function(testResults, name)
+            if testResults["result"] == "skipped" then
+                Logger.info("Test %s skipped", name)
+                table.insert(skippedTests, testResults)
+                table.insert(Tester._RESULTS["skipped"], testResults)
+                return true
+            end
+        end
+
         local beforeTesterError = Tester._eval_meta_func(tester, "before", "tester", testerName)
 
         for name, testData in pairs(tester["tests"]) do
@@ -172,16 +182,12 @@ function Tester.run()
                 end
             else
                 testResults["result"] = "skipped"
-                testResults["error"] = "Tester skipped: " .. beforeTesterError
+                testResults["error"] = "Tester skipped, failed before step: " .. beforeTesterError
             end
 
 
             testerIndividualTestResults[name] = testResults
-            if testResults["result"] == "skipped" then
-                Logger.info("Test %s skipped", name)
-                table.insert(skippedTests, testResults)
-                table.insert(Tester._RESULTS["skipped"], testResults)
-            else
+            if not processSkippedTest(testResults, name) then
                 local args = testData["args"] or {}
                 local genArgsFunc = testData["generateArgsFunc"]
                 if genArgsFunc and type(genArgsFunc) == "function" then
