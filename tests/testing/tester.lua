@@ -1,7 +1,9 @@
 -- Yes, this is a group of tests for the tester
 local Logger = require("modules/logger").create("Tester_Test")
 local Tester = require("modules/testing/tester")
-
+--[[ TODO - Tester validations/tests
+add_tests validations for testerData (valid/invalid data incoming)
+]]--
 
 local test_validations = {}
 local test_results = {results = {}} -- Tester.run() return value will be loaded into ["results"] before validations are run
@@ -337,7 +339,127 @@ return function()
         Tester.Assert.assert_equals(nil, test_results["results"]["testers"][testerName][testName], "Test missing test, found")
     end
 
-    --TODO - test add_tests with testerData
+
+    -- Generate Args Tests
+    Tester.add_tests({
+        test_successful_gen_args_return_nil = {
+            func = function(value1)
+                if value1 ~= nil then error("Found arg for nil gen args func: <" .. serpent.line(value1) .. ">") end
+            end,
+            generateArgsFunc = function() return nil end
+        },
+        test_successful_gen_args_return_one_arg = {
+            func = function(value1)
+                if value1 == nil then error("Missing arg for gen args func") end
+            end,
+            generateArgsFunc = function() return "foo" end
+        },
+        test_successful_gen_args_return_two_arg = {
+            func = function(value1, value2)
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
+            end,
+            generateArgsFunc = function() return "foo", "bar" end
+        },
+        test_successful_gen_args_return_table_one = {
+            func = function(value1)
+                if value1 == nil then error("Missing arg for gen args func") end
+            end,
+            generateArgsFunc = function() return {"foo"} end
+        },
+        test_successful_gen_args_return_table_two = {
+            func = function(value1, value2)
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
+            end,
+            generateArgsFunc = function() return {"foo"}, "bar" end
+        },
+        test_successful_gen_args_input_args = {
+            func = function(value1)
+                if value1 == nil then error("Missing arg for gen args func") end
+            end,
+            generateArgsFunc = function(value1, value2)
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
+                return "baz"
+            end,
+            generateArgsFuncArgs = {"foo", "bar"}
+        },
+
+        test_failed_gen_args_basic = {
+            func = function(value1)
+                if value1 == nil then error("Missing arg for gen args func") end
+            end,
+            generateArgsFunc = function() error("Failed gen args func run") end
+        },
+        test_failed_gen_args_input_args = {
+            func = function(value1)
+                if value1 == nil then error("Missing arg for gen args func") end
+            end,
+            generateArgsFunc = function(value1, value2)
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
+                error("Failed gen args func run, with args")
+            end,
+            generateArgsFuncArgs = {"foo", "bar"}
+        }
+    }, "genArgs_test")
+    addValidationForBasicAddTest(
+            "test_successful_gen_args_return_nil",
+            "genArgs_test",
+            "test_successful_gen_args_return_nil",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_gen_args_return_one_arg",
+            "genArgs_test",
+            "test_successful_gen_args_return_one_arg",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_gen_args_return_two_arg",
+            "genArgs_test",
+            "test_successful_gen_args_return_two_arg",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_gen_args_return_table_one",
+            "genArgs_test",
+            "test_successful_gen_args_return_table_one",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_gen_args_return_table_two",
+            "genArgs_test",
+            "test_successful_gen_args_return_table_two",
+            true
+    )
+    addValidationForBasicAddTest(
+            "test_successful_gen_args_input_args",
+            "genArgs_test",
+            "test_successful_gen_args_input_args",
+            true
+    )
+
+    addValidationForBasicAddTest(
+            "test_failed_gen_args_basic",
+            "genArgs_test",
+            "test_failed_gen_args_basic",
+            "skipped",
+            "Failed gen args func run"
+    )
+    addValidationForBasicAddTest(
+            "test_failed_gen_args_input_args",
+            "genArgs_test",
+            "test_failed_gen_args_input_args",
+            "skipped",
+            "Failed gen args func run, with args"
+    )
+
 
     -- Before/After Tests
     -- Note: returned value tests do not validate the value at this point, as they just print it currently
