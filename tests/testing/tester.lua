@@ -106,7 +106,9 @@ return function()
     addValidationForEvalMetaFunc(
             "test_eval_meta_func__normal_func_args",
             function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 Logger.info("no-op")
             end,
             {"foo", "bar"},
@@ -121,7 +123,9 @@ return function()
     addValidationForEvalMetaFunc(
             "test_eval_meta_func__normal_func_args_returned_value",
             function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 Logger.info("no-op")
                 return "returned_value"
             end,
@@ -137,7 +141,9 @@ return function()
     addValidationForEvalMetaFunc(
             "test_eval_meta_func__failing_func_args",
             function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 error("Failing meta func, with args")
             end,
             {"foo", "bar"},
@@ -347,7 +353,9 @@ return function()
         test_successful_before_func_args = {
             func = function() end,
             before = function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for before func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 Logger.info("Successful before func run")
             end,
             beforeArgs = {"foo", "bar"}
@@ -355,7 +363,9 @@ return function()
         test_successful_before_return_func_args = {
             func = function() end,
             before = function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for before func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 Logger.info("Successful before func run")
                 return "returned_value"
             end,
@@ -368,7 +378,9 @@ return function()
         test_failed_before_func_args = {
             func = function() end,
             before = function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for before func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 error("Failed before func run, with args")
             end,
             beforeArgs = {"foo", "bar"}
@@ -425,7 +437,9 @@ return function()
         test_successful_after_func_args = {
             func = function() end,
             after = function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for after func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 Logger.info("Successful after func run")
             end,
             afterArgs = {"foo", "bar"}
@@ -433,7 +447,9 @@ return function()
         test_successful_after_return_func_args = {
             func = function() end,
             after = function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for after func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 Logger.info("Successful after func run")
                 return "returned_value"
             end,
@@ -446,7 +462,9 @@ return function()
         test_failed_after_func_args = {
             func = function() end,
             after = function(value1, value2)
-                if value1 == nil or value2 == nil then error("Missing arg(s) for after func: <" .. value1 .. "><" .. value2 .. ">") end
+                if value1 == nil or value2 == nil then
+                    error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+                end
                 error("Failed after func run, with args")
             end,
             afterArgs = {"foo", "bar"}
@@ -496,7 +514,9 @@ return function()
     }, {
         name = "before_tester_func_args_tester",
         before = function(value1, value2)
-            if value1 == nil or value2 == nil then error("Missing arg(s) for before tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            if value1 == nil or value2 == nil then
+                error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+            end
             Logger.info("Successful before tester func run")
         end,
         beforeArgs = {"foo", "bar"}
@@ -513,7 +533,9 @@ return function()
     }, {
         name = "before_tester_return_func_args_tester",
         before = function(value1, value2)
-            if value1 == nil or value2 == nil then error("Missing arg(s) for before tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            if value1 == nil or value2 == nil then
+                error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+            end
             Logger.info("Successful before tester func run")
             return "returned_value"
         end,
@@ -545,7 +567,9 @@ return function()
     }, {
         name = "before_tester_func_failed_args_tester",
         before = function(value1, value2)
-            if value1 == nil or value2 == nil then error("Missing arg(s) for before tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            if value1 == nil or value2 == nil then
+                error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+            end
             Logger.info("Successful before tester func run")
             error("Failed before tester func run, with args")
         end,
@@ -592,7 +616,9 @@ return function()
     }, {
         name = "after_tester_func_args_tester",
         after = function(value1, value2)
-            if value1 == nil or value2 == nil then error("Missing arg(s) for after tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            if value1 == nil or value2 == nil then
+                error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+            end
             Logger.info("Successful after tester func run")
         end,
         afterArgs = {"foo", "bar"}
@@ -609,7 +635,9 @@ return function()
     }, {
         name = "after_tester_return_func_args_tester",
         after = function(value1, value2)
-            if value1 == nil or value2 == nil then error("Missing arg(s) for after tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            if value1 == nil or value2 == nil then
+                error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+            end
             Logger.info("Successful after tester func run")
             return "returned_value"
         end,
@@ -640,7 +668,9 @@ return function()
     }, {
         name = "after_tester_func_failed_args_tester",
         after = function(value1, value2)
-            if value1 == nil or value2 == nil then error("Missing arg(s) for after tester func: <" .. value1 .. "><" .. value2 .. ">") end
+            if value1 == nil or value2 == nil then
+                error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
+            end
             Logger.info("Successful after tester func run")
             error("Failed after tester func run, with args")
         end,
