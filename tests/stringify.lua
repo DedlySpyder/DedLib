@@ -1,6 +1,7 @@
 local Logger = require("modules/logger").create{modName = "DedLib", prefix = "Stringify_Test"}
 local Stringify = require("modules/stringify")
 local Assert = require("modules/testing/assert")
+local Util = require("modules/util")
 
 local StringifyTests = {}
 
@@ -19,14 +20,14 @@ local LUA_OBJECTS = {
     LuaCustomTable = function() return game.players end,
     LuaEntity = function() return game.surfaces["nauvis"].find_entities_filtered{limit=1}[1] end,
     LuaEntityPrototype = function() return game.entity_prototypes["stone-furnace"] end,
-    LuaForce = function() return game.create_force("testForce") end,
+    LuaForce = function() return game.forces[1] end,
     LuaGuiElement = function() return game.players[1].gui.screen end,
     LuaItemPrototype = function() return game.item_prototypes["iron-plate"] end,
     LuaItemStack = function() return game.players[1].get_main_inventory()[1] end,
     LuaPlayer = function() return game.players[1] end,
     LuaRecipe = function() return game.players[1].force.recipes["iron-plate"] end,
     LuaRecipePrototype = function() return game.recipe_prototypes["iron-plate"] end,
-    LuaSurface = function() return game.create_surface("testSurface") end,
+    LuaSurface = function() return game.surfaces[1] end,
     LuaTechnology = function() return game.players[1].force.technologies["logistics"] end,
     LuaTechnologyPrototype = function() return game.technology_prototypes["logistics"] end,
     LuaTile = function() return game.surfaces["nauvis"].get_tile(0, 0) end,
@@ -34,7 +35,7 @@ local LUA_OBJECTS = {
 }
 
 
--- is_lua_object tests
+-- is_lua_object Tests
 for objectName, generateArgsFunc in pairs(LUA_OBJECTS) do
     local name = "test_is_lua_object__true_" .. objectName
 
@@ -44,7 +45,8 @@ for objectName, generateArgsFunc in pairs(LUA_OBJECTS) do
             Logger.debug("Testing is lua object on %s", objectName)
             local actual = Stringify.is_lua_object(object)
             Assert.assert_true(actual, "Input failed for lua_object <" .. objectName .. ">: " .. serpent.line(object))
-    end}
+        end
+    }
 end
 
 local isLuaObjectFalseTests = function(testValue)
@@ -58,12 +60,101 @@ end
 
 isLuaObjectFalseTests("stringValue")
 isLuaObjectFalseTests(42)
+isLuaObjectFalseTests(4.2)
 isLuaObjectFalseTests(nil)
+isLuaObjectFalseTests(true)
 isLuaObjectFalseTests(false)
 isLuaObjectFalseTests(function() end)
 isLuaObjectFalseTests({foo = "bar"})
 
 
+-- to_string Tests
+for objectName, generateArgsFunc in pairs(LUA_OBJECTS) do -- Just making sure these all run fine and have the correct main type at least
+    local name = "test_to_string__lua_object_" .. objectName
+
+    StringifyTests[name] = {
+        generateArgsFunc = generateArgsFunc,
+        func = function(object)
+            local actual = Stringify.to_string(object)
+            Assert.assert_starts_with("<" .. objectName .. ">", actual)
+        end
+    }
+end
+
+local toStringTest = function(testNameSuffix, argOrGenerateArgsFunc, expected, block)
+    local test = Util.ternary(
+            type(argOrGenerateArgsFunc) == "function",
+            function(object)
+                local actual = Stringify.to_string(object, block)
+                Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(object))
+            end,
+            function()
+                local actual = Stringify.to_string(argOrGenerateArgsFunc, block)
+                Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(object))
+            end
+    )
+
+    StringifyTests["test_to_string__" .. testNameSuffix] = {
+        generateArgsFunc = argOrGenerateArgsFunc,
+        func = test
+    }
+end
+
+toStringTest("string", "foobar", "foobar")
+toStringTest("integer", 42, "42")
+toStringTest("float", 4.2, "4.2")
+toStringTest("nil", nil, "nil")
+toStringTest("true", true, "true")
+toStringTest("false", false, "false")
+-- This is just weird because of hte test generator
+toStringTest("function", function() return function() end end, "function")
+
+toStringTest("basic_table", {foo = "bar"}, serpent.line({foo = "bar"}))
+toStringTest("basic_table_block", {foo = "bar"}, serpent.block({foo = "bar"}), true)
+toStringTest(
+        "nested_table",
+        {foo = {bar = "baz"}},
+        serpent.line({foo = {bar = "baz"}})
+)
+toStringTest(
+        "nested_table_block",
+        {foo = {bar = "baz"}},
+        serpent.block({foo = {bar = "baz"}}),
+        true
+)
+
+toStringTest(
+        "basic_table_with_lua_obj",
+        function() return {foo = game} end,
+        serpent.line({foo = "<LuaGameScript>"})
+)
+toStringTest(
+        "basic_table_block_with_lua_obj",
+        function() return {foo = game} end,
+        serpent.block({foo = "<LuaGameScript>"}),
+        true
+)
+toStringTest(
+        "nested_table_with_lua_obj",
+        function() return {foo = {bar = game}} end,
+        serpent.line({foo = {bar = "<LuaGameScript>"}})
+)
+toStringTest(
+        "nested_table_block_with_lua_obj",
+        function() return {foo = {bar = game}} end,
+        serpent.block({foo = {bar = "<LuaGameScript>"}}),
+        true
+)
+
+toStringTest(
+        "invalid_entity",
+        function()
+            local entity = LUA_OBJECTS.LuaEntity()
+            entity.destroy()
+            return entity
+        end,
+        "<LuaEntity>{Invalid}"
+)
 
 -- to_string tests
 --[[
