@@ -48,7 +48,7 @@ function Stringify.Formatters.LuaForce(arg)
 end
 
 function Stringify.Formatters.LuaGuiElement(arg)
-    return "player_index=%s, name=%s, type=%d, index=%s", {arg.player_index, arg.name, arg.type, tostring(#arg.index)}
+    return "player_index=%s, name=%s, type=%s, index=%d", {arg.player_index, arg.name, arg.type, arg.index}
 end
 
 function Stringify.Formatters.LuaItemPrototype(arg)
@@ -57,7 +57,7 @@ end
 
 function Stringify.Formatters.LuaItemStack(arg)
     if arg.valid_for_read then
-        return "type=%s, name=%s, count=%s", {arg.type, arg.name}
+        return "type=%s, name=%s, count=%s", {arg.type, arg.name, tostring(arg.count)}
     else
         return "invalid for reading"
     end
