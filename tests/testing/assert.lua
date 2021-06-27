@@ -81,6 +81,16 @@ return function()
 
 
 
+    Logger.debug("Testing assert_nil")
+    test_assert("assert_nil", nil, "message", true)
+    test_assert("assert_nil", "literally anything else", "message", false)
+
+
+    Logger.debug("Testing assert_not_nil")
+    test_assert("assert_not_nil", nil, "message", false)
+    test_assert("assert_not_nil", "literally anything else", "message", true)
+
+
     Logger.debug("Testing assert_true")
     test_assert("assert_true", true, "message", true)
     test_assert("assert_true", "value", "message", true)

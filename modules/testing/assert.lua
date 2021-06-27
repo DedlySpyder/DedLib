@@ -41,6 +41,28 @@ function Assert._fail(message, assertType, assertVar1Name, assertVar1Value, asse
     error({message = message, stacktrace = debug.traceback()})
 end
 
+function Assert.assert_nil(obj, message)
+    if obj ~= nil then
+        Assert._fail(
+                message,
+                "nil",
+                "Object",
+                obj
+        )
+    end
+end
+
+function Assert.assert_not_nil(obj, message)
+    if obj == nil then
+        Assert._fail(
+                message,
+                "not nil",
+                "Object",
+                obj
+        )
+    end
+end
+
 function Assert.assert_true(bool, message)
     if not bool then
         Assert._fail(
