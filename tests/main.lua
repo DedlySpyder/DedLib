@@ -51,6 +51,4 @@ return function()
     --Tester.add_tests(entity, "Entity")
     --
     Tester.run()
-
-    Logger.info(Stringify.to_string(debug.getinfo(Stringify.Formatters.LuaEntity)))
 end
