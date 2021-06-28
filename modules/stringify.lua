@@ -133,7 +133,7 @@ function Stringify.to_string(arg, block, notFirst)
         arg = t
     elseif argType == "function" then
         argType = "string"
-        arg = "function"
+        arg = "<function>"
     end
 
     if notFirst then
