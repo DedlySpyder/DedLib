@@ -63,40 +63,6 @@ function LoggerTests.test_get_tick_in_game_with_count()
 end
 
 
--- Stringify & Stringify Args tests
-function LoggerTests.test_stringify_int()
-    local test = 42
-    local actual = Logger._stringify(test)
-    local expected = "42"
-
-    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
-end
-
-function LoggerTests.test_stringify_double()
-    local test = 2.005
-    local actual = Logger._stringify(test)
-    local expected = "2.005"
-
-    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
-end
-
-function LoggerTests.test_stringify_string()
-    local test = "valid_string"
-    local actual = Logger._stringify(test)
-    local expected = "valid_string"
-
-    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
-end
-
-function LoggerTests.test_stringify_table()
-    local test = { foo = "bar" }
-    local actual = Logger._stringify(test, serpent.line)
-    local expected = '{foo = "bar"}'
-
-    Tester.Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(test))
-end
-
-
 -- Format message tests -- no format string usage
 local formatMessageLogger = Logger.create{modName = "ModName", prefix = "Prefix"}
 function LoggerTests.test_format_message_with_count()

@@ -1,3 +1,5 @@
+local Stringify = require("stringify")
+
 local Logger = {}
 
 if settings then
@@ -92,20 +94,9 @@ function Logger._get_tick_in_game(count)
     return "[" .. game.tick .. count .. "]"
 end
 
-function Logger._stringify(arg, serpentFunc)
-    local argType = type(arg)
-    if argType == "string" then
-        return arg
-    elseif argType == "table" then
-        return serpentFunc(arg)
-    else
-        return tostring(arg)
-    end
-end
-
-function Logger._stringify_args(args, serpentFunc)
+function Logger._stringify_args(args, blockPrint)
     for i=1, args["n"] do
-        args[i] = Logger._stringify(args[i], serpentFunc)
+        args[i] = Stringify.to_string(args[i], blockPrint)
     end
     return args
 end
@@ -188,10 +179,10 @@ function Logger.create(loggerArgs)
         logFunc(formatted)
     end
 
-    function l._generate_log_func(upperLevel, logFunc, serpentFunc)
+    function l._generate_log_func(upperLevel, logFunc, blockPrint)
         return function(format, ...)
-            local formatArgs = Logger._stringify_args(table.pack(...), serpentFunc)
-            format = Logger._stringify(format, serpentFunc)
+            local formatArgs = Logger._stringify_args(table.pack(...), blockPrint)
+            format = Stringify.to_string(format, blockPrint)
             l._log(logFunc, format, formatArgs, upperLevel)
         end
     end
@@ -216,10 +207,8 @@ function Logger.create(loggerArgs)
             return
         end
 
-        local blockFunc = serpent.block
-        local lineFunc = serpent.line
-        l[level] = l._generate_log_func(upperLevel, logFunc, lineFunc)
-        l[level .. "_block"] = l._generate_log_func(upperLevel, logFunc, blockFunc)
+        l[level] = l._generate_log_func(upperLevel, logFunc, false)
+        l[level .. "_block"] = l._generate_log_func(upperLevel, logFunc, true)
     end
 
     -- Create all the `.[level]` and `.[level]_block` methods on the logger
