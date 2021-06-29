@@ -174,5 +174,18 @@ function Assert.assert_contains_exactly(expectedItem, list, message)
     )
 end
 
+function Assert.assert_contains_key(expectedKey, list, message)
+    if list[expectedKey] == nil then
+        Assert._fail(
+                message,
+                "contains key",
+                "Expected key",
+                expectedKey,
+                "List",
+                list
+        )
+    end
+end
+
 
 return Assert
