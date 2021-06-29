@@ -107,7 +107,7 @@ toStringTest("nil", nil, "nil")
 toStringTest("true", true, "true")
 toStringTest("false", false, "false")
 -- This is just weird because of the test generator
-toStringTest("function", function() return function() end end, "function")
+toStringTest("function", function() return function() end end, "<function>")
 
 toStringTest("basic_table", {foo = "bar"}, serpent.line({foo = "bar"}))
 toStringTest("basic_table_block", {foo = "bar"}, serpent.block({foo = "bar"}), true)
