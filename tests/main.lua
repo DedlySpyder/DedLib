@@ -15,6 +15,8 @@ local area = require("tests/area")
 
 local entity = require("tests/entity")
 
+local custom_events = require("tests/events/custom_events")
+
 local tester_results = {succeeded = 0, failed = 0}
 local add_tester_results = function(results)
     tester_results["succeeded"] = tester_results["succeeded"] + results["succeeded"]
@@ -49,6 +51,8 @@ return function()
     Tester.add_tests(area, "Area")
 
     Tester.add_tests(entity, "Entity")
+
+    Tester.add_tests(custom_events, "CustomEvents")
 
     Tester.run()
 end
