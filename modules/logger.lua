@@ -1,4 +1,5 @@
 local Stringify = require("stringify")
+local Debug = require("debug")
 
 local Logger = {}
 
@@ -160,10 +161,9 @@ function Logger.create(loggerArgs)
 
     function l._format_message(format, formatArgs, level, count)
         if formatArgs.n > 0 then
-            return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. string.format(format, unpack(formatArgs))
-        else
-            return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. " " .. level .. " - " .. format
+            format = string.format(format, unpack(formatArgs))
         end
+        return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. "[" .. Debug.get_short_current_line_string(6) .. "] " .. level .. " - " .. format
     end
 
     -- All args are assumed non-nil
