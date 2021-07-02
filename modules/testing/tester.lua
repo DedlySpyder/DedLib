@@ -169,7 +169,7 @@ function Tester.run()
         for name, testData in pairs(tester["tests"]) do
             Logger.debug("Running test %s", name)
             local func = testData["func"]
-            local funcLine = Debug.get_defined_string(func)
+            local funcLine = Debug.get_defined_line_string(func)
             local testResults = {
                 name = name,
                 test_location = funcLine
