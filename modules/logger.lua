@@ -5,7 +5,11 @@ local Util = require("util")
 
 local Logger = {} -- TODO - make sure this works and organize this file
 
+
+-- -- Static Values -- --
 Logger.ALL_LOG_LEVELS = {"off", "fatal", "error", "warn", "info", "debug", "trace"}
+
+-- All valid logging method names
 Logger.LOG_METHODS = Table.flatten(Table.map(Logger.ALL_LOG_LEVELS, function(level)
     if level ~= "off" then
         return {level, level .. "_block"}
@@ -13,8 +17,100 @@ Logger.LOG_METHODS = Table.flatten(Table.map(Logger.ALL_LOG_LEVELS, function(lev
 end))
 
 
--- -- Logger Setup -- --
 
+-- -- Public Usage -- --
+--TODO docs
+-- prefix
+-- modName
+-- levelOverride
+-- consoleLevelOverride
+-- fileLevelOverride
+-- Note about off file logging being a lie
+
+--TODO uses
+-- log levels
+-- [log]_block methods
+-- _LOG_LEVEL if you want to act on a certain level
+function Logger.create(args)
+    if not args then
+        args = {}
+    elseif type(args) == "string" then
+        args = {prefix = args}
+    end
+
+    local log = {}
+    setmetatable(log, Logger)
+
+    -- Precedence:
+    --  - modName arg
+    --  - script.mod_name (in control)
+    --  - default to "Data"
+    log.MOD_NAME = args.modName or Util.ternary(script ~= nil, script.mod_name, "Data")
+    log.PREFIX = Util.ternary(args.prefix ~= nil and args.prefix ~= "", "[" .. args.prefix .. "]", "")
+
+    log.CONSOLE_LOG_LEVEL = args.consoleLevelOverride or args.levelOverride
+    log.FILE_LOG_LEVEL = args.fileLevelOverride or args.levelOverride
+
+    if log.CONSOLE_LOG_LEVEL or log.FILE_LOG_LEVEL then
+        log:_calculate_highest_log_level()
+        log:_generate_log_functions()
+    end
+end
+
+
+-- -- Log Level  -- --
+function Logger:get_console_log_level_value()
+    local level = self.CONSOLE_LOG_LEVEL or self.ROOT_CONSOLE_LOG_LEVEL
+    return self.get_level_value(level)
+end
+
+function Logger:get_file_log_level_value()
+    local level = self.FILE_LOG_LEVEL or self.ROOT_FILE_LOG_LEVEL
+    return self.get_level_value(level)
+end
+
+-- Get the passed in level as a comparable value
+-- 0 is off, then increasing numbers are more verbose
+function Logger.get_level_value(level)
+    local levelType = type(level)
+    if levelType == "number" then
+        return level
+    elseif levelType ~= "string" then
+        log("[WARN] Logger init: Attempted to get value of non-string level: " .. serpent.line(level))
+        return 0
+    end
+
+    for i, l in ipairs(Logger.ALL_LOG_LEVELS) do
+        if l == level then
+            return i
+        end
+    end
+    return 0 -- Below off
+end
+
+-- Quick check to see if a log level will print anything
+-- Returns true when the provided log level WILL print something
+function Logger:level_is_less_than(level)
+    return self.get_level_value(self.HIGHEST_LOG_LEVEL) < self.get_level_value(level)
+end
+
+
+
+-- -- Internal Functions -- --
+-- Use at your own risk
+
+-- -- Logger Setup -- --
+function Logger:_calculate_highest_log_level()
+    local consoleLogLevel = self.CONSOLE_LOG_LEVEL or self.ROOT_CONSOLE_LOG_LEVEL
+    local fileLogLevel = self.FILE_LOG_LEVEL or self.ROOT_FILE_LOG_LEVEL
+
+    if self.get_level_value(consoleLogLevel) > self.get_level_value(fileLogLevel) then
+        self.HIGHEST_LOG_LEVEL = consoleLogLevel
+    else
+        -- Either file is higher, or they are the same
+        self.HIGHEST_LOG_LEVEL = fileLogLevel
+    end
+end
 
 -- Log function generation
 -- All values in `Logger.ALL_LOG_LEVELS` (except `off`) have 2 functions generated: `[level]` and `[level]_block`
@@ -23,7 +119,7 @@ end))
 --      Logger:info("info message")
 --      Logger:debug("%s message", "debug")
 --      Logger.info(Logger, "info message")
-function Logger:generate_log_functions(isRoot)
+function Logger:_generate_log_functions(isRoot)
     -- Stubbed logger
     if self.HIGHEST_LOG_LEVEL == "off" then
         for _, funcName in ipairs(self.LOG_METHODS) do
@@ -77,96 +173,36 @@ function Logger._generate_log_func(upperLevel, logFunc, blockPrint)
     end
 end
 
--- Logger Settings
-function Logger._refresh_settings() -- TODO allow this to be used by child loggers as well? or atleast let them change it
-    if settings then
-        Logger.ROOT_CONSOLE_LOG_LEVEL = settings.startup["DedLib_logger_level_console"].value
-        Logger.ROOT_FILE_LOG_LEVEL = settings.startup["DedLib_logger_level_file"].value
-        if Logger.ROOT_FILE_LOG_LEVEL == "off" then Logger.ROOT_FILE_LOG_LEVEL = "fatal" end -- Choice is an illusion
+
+
+-- -- Log Message Formatting -- --
+function Logger._stringify_args(args, blockPrint)
+    for i=1, args["n"] do
+        args[i] = Stringify.to_string(args[i], blockPrint)
+    end
+    return args
+end
+
+function Logger:_log(logFunc, format, formatArgs, level)
+    local formatted = self:_format_message(format, formatArgs, level)
+    if formatted == self._LAST_MESSAGE then
+        self._SAME_MESSAGE_COUNT = self._SAME_MESSAGE_COUNT + 1
+        formatted = self:_format_message(format, formatArgs, level, l._SAME_MESSAGE_COUNT)
     else
-        -- We're in the settings phase, so just stick with the defaults, people can override if they want
-        Logger.ROOT_CONSOLE_LOG_LEVEL = "off"
-        Logger.ROOT_FILE_LOG_LEVEL = "error"
+        self._SAME_MESSAGE_COUNT = 0
+        self._LAST_MESSAGE = formatted
     end
-
-    -- TODO refresh log functions & HIGHEST_LOG_LEVEL
-    Logger:calculate_highest_log_level()
-    Logger:generate_log_functions(true)
+    logFunc(formatted)
 end
-Logger._refresh_settings() -- TODO root logger setup at the end of this
 
-
-
-function Logger:calculate_highest_log_level()
-    local consoleLogLevel = self.CONSOLE_LOG_LEVEL or self.ROOT_CONSOLE_LOG_LEVEL
-    local fileLogLevel = self.FILE_LOG_LEVEL or self.ROOT_FILE_LOG_LEVEL
-
-    if self.get_level_value(consoleLogLevel) > self.get_level_value(fileLogLevel) then
-        self.HIGHEST_LOG_LEVEL = consoleLogLevel
-    else
-        -- Either file is higher, or they are the same
-        self.HIGHEST_LOG_LEVEL = fileLogLevel
+function Logger:_format_message(format, formatArgs, level, count)
+    if formatArgs.n > 0 then
+        format = string.format(format, unpack(formatArgs))
     end
-end
-
-function Logger:get_console_log_level_value()
-    local level = self.CONSOLE_LOG_LEVEL or self.ROOT_CONSOLE_LOG_LEVEL
-    return self.get_level_value(level)
-end
-
-function Logger:get_file_log_level_value()
-    local level = self.FILE_LOG_LEVEL or self.ROOT_FILE_LOG_LEVEL
-    return self.get_level_value(level)
+    return self._get_tick(count) .. "[" .. self.MOD_NAME .. "]" .. self.PREFIX .. "[" .. Debug.get_short_current_line_string(6) .. "] " .. level .. " - " .. format
 end
 
 
-function Logger.get_level_value(level)
-    local levelType = type(level)
-    if levelType == "number" then
-        return level
-    elseif levelType ~= "string" then
-        log("[WARN] Logger init: Attempted to get value of non-string level: " .. serpent.line(level))
-        return 0
-    end
-
-    for i, l in ipairs(Logger.ALL_LOG_LEVELS) do
-        if l == level then
-            return i
-        end
-    end
-    return 0 -- Below off
-end
-
-function Logger:level_is_less_than(level)
-    return self.get_level_value(self.HIGHEST_LOG_LEVEL) < self.get_level_value(level)
-end
-
-
--- Log writing functions
-
--- Not sure on init if `game` is initialized
--- If it is, then this check is no longer needed
-function Logger._log_console(message)
-    if game then
-        Logger._log_console = function(m)
-            game.print(m)
-        end
-        Logger._log_console(message)
-    end
-end
-
-Logger._log_file = log
-
-function Logger._log_both(message)
-    Logger._log_console(message)
-    Logger._log_file(message)
-end
-
-function Logger._stub() end
-
-
-
--- Log message formatting
 function Logger._get_tick(count)
     if game then
         Logger._get_tick = Logger._get_tick_in_game
@@ -184,72 +220,59 @@ function Logger._get_tick_in_game(count)
     return "[" .. game.tick .. count .. "]"
 end
 
-function Logger._stringify_args(args, blockPrint)
-    for i=1, args["n"] do
-        args[i] = Stringify.to_string(args[i], blockPrint)
+
+
+-- -- Log Writing -- --
+function Logger._log_console(message)
+    if game then
+        Logger._log_console = function(m)
+            game.print(m)
+        end
+        Logger._log_console(message)
     end
-    return args
 end
 
-function Logger:_format_message(format, formatArgs, level, count)
-    if formatArgs.n > 0 then
-        format = string.format(format, unpack(formatArgs))
-    end
-    return self._get_tick(count) .. "[" .. self.MOD_NAME .. "]" .. self.PREFIX .. "[" .. Debug.get_short_current_line_string(6) .. "] " .. level .. " - " .. format
+Logger._log_file = log
+
+function Logger._log_both(message)
+    Logger._log_console(message)
+    Logger._log_file(message)
 end
 
-function Logger:_log(logFunc, format, formatArgs, level)
-    local formatted = self:_format_message(format, formatArgs, level)
-    if formatted == self._LAST_MESSAGE then
-        self._SAME_MESSAGE_COUNT = self._SAME_MESSAGE_COUNT + 1
-        formatted = self:_format_message(format, formatArgs, level, l._SAME_MESSAGE_COUNT)
+function Logger._stub() end -- No-op
+
+
+
+-- Logger Settings
+function Logger._refresh_settings() -- TODO allow this to be used by child loggers as well? or atleast let them change it
+    if settings then
+        Logger.ROOT_CONSOLE_LOG_LEVEL = settings.startup["DedLib_logger_level_console"].value
+        Logger.ROOT_FILE_LOG_LEVEL = settings.startup["DedLib_logger_level_file"].value
+        if Logger.ROOT_FILE_LOG_LEVEL == "off" then Logger.ROOT_FILE_LOG_LEVEL = "fatal" end -- Choice is an illusion
     else
-        self._SAME_MESSAGE_COUNT = 0
-        self._LAST_MESSAGE = formatted
+        -- We're in the settings phase, so just stick with the defaults, people can override if they want
+        Logger.ROOT_CONSOLE_LOG_LEVEL = "off"
+        Logger.ROOT_FILE_LOG_LEVEL = "error"
     end
-    logFunc(formatted)
+
+    -- TODO refresh log functions & HIGHEST_LOG_LEVEL
+    Logger:_calculate_highest_log_level()
+    Logger:_generate_log_functions(true)
 end
+Logger._refresh_settings() -- TODO root logger setup at the end of this
 
 
 
 
---TODO docs
--- prefix
--- modName
--- levelOverride
--- consoleLevelOverride
--- fileLevelOverride
--- Note about off file logging being a lie
 
---TODO uses
--- log levels
--- [log]_block methods
--- _LOG_LEVEL if you want to act on a certain level
-function Logger.create(args)
-    if not args then
-        args = {}
-    elseif type(args) == "string" then
-        args = {prefix = args}
-    end
 
-    local log = {}
-    setmetatable(log, Logger)
 
-    -- Precedence:
-    --  - modName arg
-    --  - script.mod_name (in control)
-    --  - default to "Data"
-    log.MOD_NAME = args.modName or Util.ternary(script ~= nil, script.mod_name, "Data")
-    log.PREFIX = Util.ternary(args.prefix ~= nil and args.prefix ~= "", "[" .. args.prefix .. "]", "")
 
-    log.CONSOLE_LOG_LEVEL = args.consoleLevelOverride or args.levelOverride
-    log.FILE_LOG_LEVEL = args.fileLevelOverride or args.levelOverride
 
-    if log.CONSOLE_LOG_LEVEL or log.FILE_LOG_LEVEL then
-        log:calculate_highest_log_level()
-        log:generate_log_functions()
-    end
-end
+
+
+
+
 --[[
 function Logger.create(loggerArgs)
     if not loggerArgs then
