@@ -1,4 +1,4 @@
-local Logger = require("modules/logger").create{modName = "DedLib", prefix = "CustomEvents"}
+local Logger = require("modules/logger").create{modName = "DedLib"}
 
 --[[
 This module is for producing or consuming custom events. Either side of this interaction can use this module, or both can.
@@ -40,7 +40,7 @@ function CustomEvents.Publishing.register_event(eventName)
     local key = CustomEvents._mapping_key(script.mod_name, eventName)
     local id = script.generate_event_name()
 
-    Logger.info("Registering event id %s for event named %s", id, key)
+    Logger:info("Registering event id %s for event named %s", id, key)
     CustomEvents.Publishing._ID_MAPPING[key] = id
     remote.add_interface(key, {
         get_id = function() return id end
@@ -54,11 +54,11 @@ function CustomEvents.Publishing.raise_event(eventName, data)
     local id = CustomEvents.Publishing._ID_MAPPING[key]
 
     if id then
-        Logger.info("Raising event for id %s for event named %s", id, key)
-        Logger.trace("Event data: %s", data)
+        Logger:info("Raising event for id %s for event named %s", id, key)
+        Logger:trace("Event data: %s", data)
         script.raise_event(id, data)
     else
-        Logger.error("Event for id %s has not been registered yet, call CustomEvents.Publishing.register_event(...) first", id)
+        Logger:error("Event for id %s has not been registered yet, call CustomEvents.Publishing.register_event(...) first", id)
     end
 end
 
@@ -75,7 +75,7 @@ function CustomEvents.Consuming._get_event_id(modName, eventName)
             cachedId = remote.call(key, "get_id")
             CustomEvents.Consuming._ID_MAPPING[key] = cachedId
         else
-            Logger.error("Event for %s is not registered", key)
+            Logger:error("Event for %s is not registered", key)
         end
     end
     return cachedId
@@ -86,11 +86,11 @@ function CustomEvents.Consuming.register_handler(modName, eventName, handler)
     local id = CustomEvents.Consuming._get_event_id(modName, eventName)
 
     if id ~= nil then
-        Logger.info("Registering handler for event id %s for event named %s", id, key)
+        Logger:info("Registering handler for event id %s for event named %s", id, key)
         script.on_event(id, handler)
         return id
     else
-        Logger.error("Registering handler for event named %s failed, event does not exist", key)
+        Logger:error("Registering handler for event named %s failed, event does not exist", key)
     end
 end
 

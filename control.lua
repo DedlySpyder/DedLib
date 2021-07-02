@@ -1,4 +1,4 @@
-local Logger = require("modules/logger").create("Control")
+local Logger = require("modules/logger").create()
 
 function run_tests()
     local testRunner = require("tests/main")
@@ -8,9 +8,9 @@ function run_tests()
     end)
 end
 if settings.startup["DedLib_run_tests"].value then
-    Logger.trace("Attempting to run tests")
+    Logger:trace("Attempting to run tests")
     local status, err = pcall(run_tests)
     if not status then
-        Logger.error("Failed to run tests: %s", err)
+        Logger:error("Failed to run tests: %s", err)
     end
 end

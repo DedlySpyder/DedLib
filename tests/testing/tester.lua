@@ -1,5 +1,5 @@
 -- Yes, this is a group of tests for the tester
-local Logger = require("modules/logger").create("Tester_Test")
+local Logger = require("modules/logger").create("Testing")
 local Tester = require("modules/testing/tester")
 --[[ TODO - Tester validations/tests
 add_tests validations for testerData (valid/invalid data incoming)
@@ -101,7 +101,7 @@ return function()
     addValidationForEvalMetaFunc("test_eval_meta_func__not_func", "i'm not a function", nil, nil)
     addValidationForEvalMetaFunc(
             "test_eval_meta_func__normal_func",
-            function() Logger.info("no-op") end,
+            function() Logger:info("no-op") end,
             nil,
             nil
     )
@@ -111,14 +111,14 @@ return function()
                 if value1 == nil or value2 == nil then
                     error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
                 end
-                Logger.info("no-op")
+                Logger:info("no-op")
             end,
             {"foo", "bar"},
             nil
     )
     addValidationForEvalMetaFunc(
             "test_eval_meta_func__normal_func_returned_value",
-            function() Logger.info("no-op"); return "returned_value" end,
+            function() Logger:info("no-op"); return "returned_value" end,
             nil,
             nil
     )
@@ -128,7 +128,7 @@ return function()
                 if value1 == nil or value2 == nil then
                     error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
                 end
-                Logger.info("no-op")
+                Logger:info("no-op")
                 return "returned_value"
             end,
             {"foo", "bar"},
@@ -154,8 +154,8 @@ return function()
 
 
     -- Tester Add Test(s) Tests
-    Logger.trace("Loading tests into tester:")
-    Tester.add_test(function() Logger.info("Successful single test, unnamed") end)
+    Logger:trace("Loading tests into tester:")
+    Tester.add_test(function() Logger:info("Successful single test, unnamed") end)
     addValidationForBasicAddTest(
             "add_test_successful_unnamed",
             "Single Test #0 Tester",
@@ -163,7 +163,7 @@ return function()
             true
     )
 
-    Tester.add_test(function() Logger.info("Successful single test, named") end, "success single test")
+    Tester.add_test(function() Logger:info("Successful single test, named") end, "success single test")
     addValidationForBasicAddTest(
             "add_test_successful_named",
             "success single test Tester",
@@ -171,7 +171,7 @@ return function()
             true
     )
 
-    Tester.add_test(function() Logger.info("Successful single test, named, missing \"test\" in name") end, "success single incomplete name")
+    Tester.add_test(function() Logger:info("Successful single test, named, missing \"test\" in name") end, "success single incomplete name")
     addValidationForBasicAddTest(
             "add_test_unsuccessful_named_missing_test",
             "success single incomplete name Test Tester",
@@ -180,7 +180,7 @@ return function()
     )
 
     Tester.add_test(function()
-        Logger.info("Failed single test, unnamed")
+        Logger:info("Failed single test, unnamed")
         error("Failed single test, unnamed")
     end)
     addValidationForBasicAddTest(
@@ -192,7 +192,7 @@ return function()
     )
 
     Tester.add_test(function()
-        Logger.info("Failed single test, named")
+        Logger:info("Failed single test, named")
         error("Failed single test, named")
     end, "fail single test")
     addValidationForBasicAddTest(
@@ -204,7 +204,7 @@ return function()
     )
 
     Tester.add_test(function()
-        Logger.info("Failed single test, assert failure")
+        Logger:info("Failed single test, assert failure")
         assert(false)
     end, "fail assert test")
     addValidationForBasicAddTest(
@@ -217,10 +217,10 @@ return function()
 
     Tester.add_tests({
         success_test = function()
-            Logger.info("Successful multi test, unnamed")
+            Logger:info("Successful multi test, unnamed")
         end,
         fail_test = function()
-            Logger.info("Failed multi test, unnamed")
+            Logger:info("Failed multi test, unnamed")
             error("Failed multi test, unnamed")
         end
     })
@@ -241,10 +241,10 @@ return function()
 
     Tester.add_tests({
         success_test = function()
-            Logger.info("Successful multi test, named")
+            Logger:info("Successful multi test, named")
         end,
         fail_test = function()
-            Logger.info("Failed multi test, named")
+            Logger:info("Failed multi test, named")
             error("Failed multi test, named")
         end
     }, "mixed multi test")
@@ -264,7 +264,7 @@ return function()
 
     Tester.add_tests({
         fail_test = function()
-            Logger.info("Failed duplicate tester")
+            Logger:info("Failed duplicate tester")
             error("Failed duplicate tester")
         end
     }, "duplicate")
@@ -278,7 +278,7 @@ return function()
 
     Tester.add_tests({
         fail_test = function()
-            Logger.info("Failed duplicate-1 tester")
+            Logger:info("Failed duplicate-1 tester")
             error("Failed duplicate-1 tester")
         end
     }, "duplicate")
@@ -292,7 +292,7 @@ return function()
 
     Tester.add_tests({
         fail_test = function()
-            Logger.info("Failed duplicate-2 tester")
+            Logger:info("Failed duplicate-2 tester")
             error("Failed duplicate-2 tester")
         end
     }, "duplicate")
@@ -307,7 +307,7 @@ return function()
 
     Tester.add_tests({
         SHOULD_NOT_SEE_THIS_FUNC = function()
-            Logger.error("NOT A TEST")
+            Logger:error("NOT A TEST")
         end
     }, "NO TESTS FOR ME")
     test_validations["add_tests_no_tests_tester_missing"] = function()
@@ -320,10 +320,10 @@ return function()
 
     Tester.add_tests({
         success_test = function()
-            Logger.info("Successful test for some ignored tester")
+            Logger:info("Successful test for some ignored tester")
         end,
         SHOULD_NOT_SEE_THIS_FUNC = function()
-            Logger.error("NOT A TEST")
+            Logger:error("NOT A TEST")
         end
     }, "one test for me")
     addValidationForBasicAddTest(
@@ -466,11 +466,11 @@ return function()
     Tester.add_tests({
         test_successful_before_func = {
             func = function() end,
-            before = function() Logger.info("Successful before func run") end
+            before = function() Logger:info("Successful before func run") end
         },
         test_successful_before_return_func = {
             func = function() end,
-            before = function() Logger.info("Successful before func run with return"); return "returned_value" end
+            before = function() Logger:info("Successful before func run with return"); return "returned_value" end
         },
         test_successful_before_func_args = {
             func = function() end,
@@ -478,7 +478,7 @@ return function()
                 if value1 == nil or value2 == nil then
                     error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
                 end
-                Logger.info("Successful before func run")
+                Logger:info("Successful before func run")
             end,
             beforeArgs = {"foo", "bar"}
         },
@@ -488,7 +488,7 @@ return function()
                 if value1 == nil or value2 == nil then
                     error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
                 end
-                Logger.info("Successful before func run")
+                Logger:info("Successful before func run")
                 return "returned_value"
             end,
             beforeArgs = {"foo", "bar"}
@@ -550,11 +550,11 @@ return function()
     local afterFuncTesterTests = {
         test_successful_after_func = {
             func = function() end,
-            after = function() Logger.info("Successful after func run") end
+            after = function() Logger:info("Successful after func run") end
         },
         test_successful_after_return_func = {
             func = function() end,
-            after = function() Logger.info("Successful after func run with return"); return "returned_value" end
+            after = function() Logger:info("Successful after func run with return"); return "returned_value" end
         },
         test_successful_after_func_args = {
             func = function() end,
@@ -562,7 +562,7 @@ return function()
                 if value1 == nil or value2 == nil then
                     error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
                 end
-                Logger.info("Successful after func run")
+                Logger:info("Successful after func run")
             end,
             afterArgs = {"foo", "bar"}
         },
@@ -572,7 +572,7 @@ return function()
                 if value1 == nil or value2 == nil then
                     error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
                 end
-                Logger.info("Successful after func run")
+                Logger:info("Successful after func run")
                 return "returned_value"
             end,
             afterArgs = {"foo", "bar"}
@@ -609,7 +609,7 @@ return function()
         test = function() end
     }, {
         name = "before_tester_func_tester",
-        before = function() Logger.info("Successful before tester func run") end
+        before = function() Logger:info("Successful before tester func run") end
     })
     addValidationForBasicAddTest(
             "before_tester_func_tester",
@@ -622,7 +622,7 @@ return function()
         test = function() end
     }, {
         name = "before_tester_return_func_tester",
-        before = function() Logger.info("Successful before tester func run"); return "returned_value" end
+        before = function() Logger:info("Successful before tester func run"); return "returned_value" end
     })
     addValidationForBasicAddTest(
             "before_tester_return_func_tester",
@@ -639,7 +639,7 @@ return function()
             if value1 == nil or value2 == nil then
                 error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
             end
-            Logger.info("Successful before tester func run")
+            Logger:info("Successful before tester func run")
         end,
         beforeArgs = {"foo", "bar"}
     })
@@ -658,7 +658,7 @@ return function()
             if value1 == nil or value2 == nil then
                 error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
             end
-            Logger.info("Successful before tester func run")
+            Logger:info("Successful before tester func run")
             return "returned_value"
         end,
         beforeArgs = {"foo", "bar"}
@@ -692,7 +692,7 @@ return function()
             if value1 == nil or value2 == nil then
                 error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
             end
-            Logger.info("Successful before tester func run")
+            Logger:info("Successful before tester func run")
             error("Failed before tester func run, with args")
         end,
         beforeArgs = {"foo", "bar"}
@@ -711,7 +711,7 @@ return function()
         test = function() end
     }, {
         name = "after_tester_func_tester",
-        after = function() Logger.info("Successful after tester func run") end
+        after = function() Logger:info("Successful after tester func run") end
     })
     addValidationForBasicAddTest(
             "after_tester_func_tester",
@@ -724,7 +724,7 @@ return function()
         test = function() end
     }, {
         name = "after_tester_return_func_tester",
-        after = function() Logger.info("Successful after tester func run"); return "returned_value" end
+        after = function() Logger:info("Successful after tester func run"); return "returned_value" end
     })
     addValidationForBasicAddTest(
             "after_tester_return_func_tester",
@@ -741,7 +741,7 @@ return function()
             if value1 == nil or value2 == nil then
                 error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
             end
-            Logger.info("Successful after tester func run")
+            Logger:info("Successful after tester func run")
         end,
         afterArgs = {"foo", "bar"}
     })
@@ -760,7 +760,7 @@ return function()
             if value1 == nil or value2 == nil then
                 error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
             end
-            Logger.info("Successful after tester func run")
+            Logger:info("Successful after tester func run")
             return "returned_value"
         end,
         afterArgs = {"foo", "bar"}
@@ -793,7 +793,7 @@ return function()
             if value1 == nil or value2 == nil then
                 error("Missing arg(s) for func: <" .. serpent.line(value1) .. "><" .. serpent.line(value2) .. ">")
             end
-            Logger.info("Successful after tester func run")
+            Logger:info("Successful after tester func run")
             error("Failed after tester func run, with args")
         end,
         afterArgs = {"foo", "bar"}
@@ -807,7 +807,7 @@ return function()
 
 
 
-    Logger.trace("Running tester")
+    Logger:trace("Running tester")
     test_results["results"] = Tester.run()
 
     -- Validations
@@ -820,17 +820,17 @@ return function()
     end
 
     for name, func in pairs(test_validations) do
-        Logger.debug("Running validation for: %s", name)
+        Logger:debug("Running validation for: %s", name)
         local s, err = pcall(func)
         if not s then
-            Logger.fatal("Failed validation of Tester test %s with error: %s", name, err)
+            Logger:fatal("Failed validation of Tester test %s with error: %s", name, err)
             increment_failed()
         else
             increment_succeeded()
         end
     end
 
-    Logger.info("Tester validation results: %s", count)
+    Logger:info("Tester validation results: %s", count)
     if count["failed"] > 0 then
         error("Tester validations are failing, cannot accurately run other tests at this time. See debug logs for more details.")
     end

@@ -1,4 +1,4 @@
-local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib", prefix = "Tester"}
+local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib"}
 local Debug = require("__DedLib__/modules/debug")
 local Table = require("__DedLib__/modules/table")
 local Util = require("__DedLib__/modules/util")
@@ -31,7 +31,7 @@ function Tester.add_test(data, name)
     if not string.find(string.lower(name), "test") then
         name = name .. " Test"
     end
-    Logger.debug("Adding single test %s", name)
+    Logger:debug("Adding single test %s", name)
     return Tester.add_tests({[name] = data}, name .. " Tester")
 end
 
@@ -46,36 +46,36 @@ function Tester.add_tests(tests, testerData)
         end
 
         local testerName = tester["name"]
-        Logger.debug("Creating tester for %s", testerName)
+        Logger:debug("Creating tester for %s", testerName)
         tester["tests"] = {}
         for name, data in pairs(tests) do
             if type(name) == "number" then name = "Test #" .. name end
             if string.find(string.lower(name), "test") then
                 if type(data) == "function" then
-                    Logger.debug("Adding test " .. name)
+                    Logger:debug("Adding test " .. name)
                     tester["tests"][name] = {func = data}
                 else
-                    Logger.debug("Adding test %s with data: %s", name, data)
+                    Logger:debug("Adding test %s with data: %s", name, data)
                     tester["tests"][name] = data -- TODO - fixme - add validation & tests for this
                                                         -- current format: {func, args, generateArgsFunc, generateArgsFuncArgs}
                 end
             else
-                Logger.debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
+                Logger:debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
             end
         end
-        Logger.debug("Done adding tests to %s", testerName)
+        Logger:debug("Done adding tests to %s", testerName)
         if table_size(tester["tests"]) > 0 then
             table.insert(Tester._TESTERS, tester)
         else
-            Logger.warn('No tests for %s found. Did the test functions names contain the word "test"?', testerName)
+            Logger:warn('No tests for %s found. Did the test functions names contain the word "test"?', testerName)
         end
     else
-        Logger.error('Failed to add new tests, variable needs to be a table of "test_name" -> test_function')
-        if Logger.level_is_less_than("debug") then
-            Logger.info("Enable debug logging for more information.")
+        Logger:error('Failed to add new tests, variable needs to be a table of "test_name" -> test_function')
+        if Logger:level_is_less_than("debug") then
+            Logger:info("Enable debug logging for more information.")
         else
-            Logger.debug(debug.traceback())
-            Logger.debug(tests)
+            Logger:debug(debug.traceback())
+            Logger:debug(tests)
         end
     end
 end
@@ -104,7 +104,7 @@ function Tester._add_error_to_test_results(testName, error, testResults, skipLog
         testResults["error"] = error
     end
     if not skipLog then
-        Logger.error("Test %s failed: %s", testName, testResults["error"])
+        Logger:error("Test %s failed: %s", testName, testResults["error"])
     end
     return testResults
 end
@@ -114,13 +114,13 @@ end
 function Tester._eval_meta_func(data, funcName, layerType, layerName)
     local func = data[funcName]
     if func and type(func) == "function" then
-        Logger.debug("Running %s function for %s %s", funcName, layerType, layerName)
+        Logger:debug("Running %s function for %s %s", funcName, layerType, layerName)
 
         local args = data[funcName .. "Args"] or {}
         if type(args) ~= "table" or #args == 0 then args = {args} end -- Args should be a list of args
         local s, e = pcall(func, table.unpack(args))
         if not s then
-            Logger.error("%s %s function failed for %s, with error <%s>",
+            Logger:error("%s %s function failed for %s, with error <%s>",
                     Util.String.capitalize(layerType),
                     funcName,
                     layerName,
@@ -129,20 +129,20 @@ function Tester._eval_meta_func(data, funcName, layerType, layerName)
             )
             return Tester._add_error_to_test_results(layerName, e, {}, true)["error"]
         end
-        Logger.debug("Successfully completed %s before function%s", layerType, Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
+        Logger:debug("Successfully completed %s before function%s", layerType, Util.ternary(e ~= nil, ", returned value: " .. serpent.line(e), ""))
     end
     return nil
 end
 
 function Tester.run()
-    Logger.trace("Running all tests")
+    Logger:trace("Running all tests")
     for _, tester in ipairs(Tester._TESTERS) do
         local testerName = tester["name"]
-        Logger.debug("Running tester %s", testerName)
+        Logger:debug("Running tester %s", testerName)
 
         local i = 1
         while Tester._RESULTS["testers"][testerName] do
-            Logger.warn("Tester named %s already exists, incrementing to make unique", testerName)
+            Logger:warn("Tester named %s already exists, incrementing to make unique", testerName)
             testerName = tester["name"] .. "-" .. i
             i = i + 1
         end
@@ -157,7 +157,7 @@ function Tester.run()
         -- Returns true if the test was skipped and processed
         local processSkippedTest = function(testResults, name)
             if testResults["result"] == "skipped" then
-                Logger.info("Test %s skipped", name)
+                Logger:info("Test %s skipped", name)
                 table.insert(skippedTests, testResults)
                 table.insert(Tester._RESULTS["skipped"], testResults)
                 return true
@@ -167,7 +167,7 @@ function Tester.run()
         local beforeTesterError = Tester._eval_meta_func(tester, "before", "tester", testerName)
 
         for name, testData in pairs(tester["tests"]) do
-            Logger.debug("Running test %s", name)
+            Logger:debug("Running test %s", name)
             local func = testData["func"]
             local funcLine = Debug.get_defined_line_string(func)
             local testResults = {
@@ -207,7 +207,7 @@ function Tester.run()
                     testResults["result"] = status
 
                     if status then
-                        Logger.info("Test %s succeeded", name)
+                        Logger:info("Test %s succeeded", name)
                         table.insert(succeededTests, testResults)
                         table.insert(Tester._RESULTS["succeeded"], testResults)
                     else
@@ -228,14 +228,14 @@ function Tester.run()
 
     -- Reset the tester, but dump the counts in case the end user wants them first
     local results = Tester._RESULTS
-    Logger.debug("Resetting tester values")
+    Logger:debug("Resetting tester values")
     Tester.reset()
     return results
 end
 
 function Tester._report_failed()
-    Logger.info("")
-    Logger.info("Finished running tests:")
+    Logger:info("")
+    Logger:info("Finished running tests:")
 
     local succeededCount = #Tester._RESULTS["succeeded"]
     local skippedCount = #Tester._RESULTS["skipped"]
@@ -246,43 +246,43 @@ function Tester._report_failed()
         failedCount = failedCount + (Tester._EXTERNAL_RESULTS["failed"] or 0)
     end
 
-    Logger.info("    %d succeeded", succeededCount)
+    Logger:info("    %d succeeded", succeededCount)
     if skippedCount > 0 then
-        Logger.info("    %d skipped", skippedCount)
+        Logger:info("    %d skipped", skippedCount)
     end
-    Logger.info("    %d failed", failedCount)
+    Logger:info("    %d failed", failedCount)
 
-    if Logger.level_is_less_than("debug") then
-        Logger.info("")
-        Logger.info("Enable debug logging for more information.")
+    if Logger:level_is_less_than("debug") then
+        Logger:info("")
+        Logger:info("Enable debug logging for more information.")
     end
 
     for testerName, testerData in pairs(Tester._RESULTS["testers"]) do
         local failedTests = testerData["failed"]
         if #failedTests > 0 then
-            Logger.info("")
-            Logger.info("%d failed tests for %s", #failedTests, testerName)
+            Logger:info("")
+            Logger:info("%d failed tests for %s", #failedTests, testerName)
         end
         for _, test in ipairs(failedTests) do
-            Logger.info("")
-            Logger.info("%s <%s> failed: %s", test["name"], test["test_location"], test["error"])
+            Logger:info("")
+            Logger:info("%s <%s> failed: %s", test["name"], test["test_location"], test["error"])
             if test["stack"] then
-                Logger.debug(test["stack"])
+                Logger:debug(test["stack"])
             else
-                Logger.debug("No stacktrace for test failure")
+                Logger:debug("No stacktrace for test failure")
             end
         end
 
         local skippedTests = testerData["skipped"]
         if #skippedTests > 0 then
-            Logger.info("")
-            Logger.info("%d skipped tests for %s", #skippedTests, testerName)
+            Logger:info("")
+            Logger:info("%d skipped tests for %s", #skippedTests, testerName)
         end
         for _, test in ipairs(skippedTests) do
-            Logger.info("")
-            Logger.info("%s <%s> skipped. Error: %s", test["name"], test["test_location"], test["error"])
+            Logger:info("")
+            Logger:info("%s <%s> skipped. Error: %s", test["name"], test["test_location"], test["error"])
             if test["stack"] then
-                Logger.debug(test["stack"])
+                Logger:debug(test["stack"])
             end
         end
     end

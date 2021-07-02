@@ -1,4 +1,4 @@
-local Logger = require("modules/logger").create("Assert_Testing")
+local Logger = require("modules/logger").create("Testing")
 local Mock = require("modules/testing/mock")
 local Assert = require("modules/testing/assert")
 local Util = require("modules/util")
@@ -17,20 +17,20 @@ local test_mock_equals = function(expected, actual, shouldMatch)
     local s, e = pcall(Assert.assert_equals, expected, actual)
     if s then
         if shouldMatch then
-            Logger.debug("Expected matched, and got matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
+            Logger:debug("Expected matched, and got matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
             increment_test_succeeded()
         else
-            Logger.fatal("Expected not matched, but got matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
+            Logger:fatal("Expected not matched, but got matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
             increment_test_failed()
         end
     else
         if shouldMatch then
-            Logger.fatal("Expected matched, but got not matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
-            Logger.trace(e)
+            Logger:fatal("Expected matched, but got not matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
+            Logger:trace(e)
             increment_test_failed()
         else
-            Logger.debug("Expected not matched, and got not matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
-            Logger.trace(e)
+            Logger:debug("Expected not matched, and got not matched. Expected: <" .. serpent.line(expected) .. "> - Actual: <" .. serpent.line(actual) .. ">")
+            Logger:trace(e)
             increment_test_succeeded()
         end
     end
@@ -38,7 +38,7 @@ end
 
 
 return function()
-    Logger.debug("Testing mock get valid lua_object")
+    Logger:debug("Testing mock get valid lua_object")
     test_mock_equals(Mock.get_valid_lua_object(nil), {valid = true}, true)
     test_mock_equals(Mock.get_valid_lua_object({foo = "bar"}), {valid = true, foo = "bar"}, true)
 
@@ -46,7 +46,7 @@ return function()
         local s, err = pcall(Mock.get_valid_lua_object, "foobar")
         err = Util.String.split(err, ":")[3]
         if s or err ~= " Values for mock lua_object is not a table" then
-            Logger.fatal(string.format("Fatal mock valid lua_object test failed, status is <%s>, message is <%s>",
+            Logger:fatal(string.format("Fatal mock valid lua_object test failed, status is <%s>, message is <%s>",
                     tostring(s),
                     err
             ))
@@ -60,7 +60,7 @@ return function()
 
 
     -- Other tests can depend on Mock working properly, so fail early if it is failing
-    Logger.info("Mock validation results: %s", test_counts)
+    Logger:info("Mock validation results: %s", test_counts)
     if test_counts["failed"] > 0 then
         error("Mock validations are failing, cannot accurately run other tests at this time. See debug logs for more details.")
     end

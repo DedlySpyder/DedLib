@@ -1,6 +1,6 @@
 -- TODO - this can all be a new mod?
 -- TODO - should probably still have tests on the functions that wrap other ones, just to make sure they don't break (missing return or something dumb happens)
-local Logger = require("modules/logger").create("Test_Main")
+local Logger = require("modules/logger").create("Testing")
 local Tester = require("modules/testing/tester")
 
 local assert = require("tests/testing/assert")
@@ -31,14 +31,14 @@ if remote.interfaces["freeplay"] then
 end
 
 return function()
-    Logger.info("Running tests for DedLib")
-    Logger.info("Running Tester module validations")
+    Logger:info("Running tests for DedLib")
+    Logger:info("Running Tester module validations")
     -- Test the tester first
     add_tester_results(assert())
     add_tester_results(mock())
     add_tester_results(tester())
 
-    Logger.info("Tester validation results: %s", tester_results)
+    Logger:info("Tester validation results: %s", tester_results)
 
     Tester.add_external_results(tester_results)
 
