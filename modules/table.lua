@@ -1,5 +1,3 @@
-local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib", prefix = "Table"}
-
 local Table = {}
 
 
@@ -21,6 +19,37 @@ function Table.shift(tbl, n)
     local t = {}
     for i = n + 1, len do
         t[i - n] = tbl[i]
+    end
+    return t
+end
+
+function Table.map(tbl, func)
+    local t = {}
+    local isArr = #tbl > 0
+    for k, v in pairs(tbl) do
+        if isArr then
+            local newValue = func(v)
+            if newValue ~= nil then
+                table.insert(t, newValue)
+            end
+        else
+            t[k] = func(v)
+        end
+    end
+    return t
+end
+
+-- Flatten by 1 layer
+function Table.flatten(tbl)
+    local t = {}
+    for _, v in pairs(tbl) do
+        if type(v) == "table" then
+            for _, subV in pairs(v) do
+                table.insert(t, subV)
+            end
+        else
+            table.insert(t, v)
+        end
     end
     return t
 end
