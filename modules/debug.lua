@@ -35,11 +35,11 @@ function Debug.parse_short_code_line_string(src, line)
 end
 
 function Debug.get_short_defined_line_string(f)
-    return Debug.parse_short_code_line_string(Debug.get_defined(f))
+    return Debug.parse_short_code_line_string(Debug.get_defined_line(f))
 end
 
 function Debug.get_short_current_line_string(f)
-    return Debug.parse_short_code_line_string(Debug.get_current(f))
+    return Debug.parse_short_code_line_string(Debug.get_current_line(f))
 end
 
 
