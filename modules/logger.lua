@@ -194,7 +194,7 @@ function Logger:_log(logFunc, format, formatArgs, level)
     local formatted = self:_format_message(format, formatArgs, level)
     if formatted == self._LAST_MESSAGE then
         self._SAME_MESSAGE_COUNT = self._SAME_MESSAGE_COUNT + 1
-        formatted = self:_format_message(format, formatArgs, level, l._SAME_MESSAGE_COUNT)
+        formatted = self:_format_message(format, formatArgs, level, self._SAME_MESSAGE_COUNT)
     else
         self._SAME_MESSAGE_COUNT = 0
         self._LAST_MESSAGE = formatted
