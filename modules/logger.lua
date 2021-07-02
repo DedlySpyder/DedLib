@@ -4,6 +4,7 @@ local Table = require("table")
 local Util = require("util")
 
 local Logger = {} -- TODO - make sure this works and organize this file
+Logger.__index = Logger
 
 
 -- -- Static Values -- --
@@ -46,7 +47,11 @@ function Logger.create(args)
     --  - script.mod_name (in control)
     --  - default to "Data"
     log.MOD_NAME = args.modName or Util.ternary(script ~= nil, script.mod_name, "Data")
-    log.PREFIX = Util.ternary(args.prefix ~= nil and args.prefix ~= "", "[" .. args.prefix .. "]", "")
+    log.PREFIX = Util.ternary(
+            args.prefix ~= nil and args.prefix ~= "",
+            string.format("[%s]", args.prefix),
+            ""
+    )
 
     log.CONSOLE_LOG_LEVEL = args.consoleLevelOverride or args.levelOverride
     log.FILE_LOG_LEVEL = args.fileLevelOverride or args.levelOverride
@@ -55,6 +60,8 @@ function Logger.create(args)
         log:_calculate_highest_log_level()
         log:_generate_log_functions()
     end
+
+    return log
 end
 
 
@@ -131,8 +138,8 @@ function Logger:_generate_log_functions(isRoot)
     -- If anything was overridden, then recreate all of the logger methods
     -- Otherwise all of them will be inherited up from the root logger
     if isRoot or (self.CONSOLE_LOG_LEVEL or self.FILE_LOG_LEVEL) then
-        local consoleLevelValue = self.get_console_log_level_value()
-        local fileLevelValue = self.get_file_log_level_value()
+        local consoleLevelValue = self:get_console_log_level_value()
+        local fileLevelValue = self:get_file_log_level_value()
 
         -- Skip "off"
         for i = 2, #self.ALL_LOG_LEVELS do
