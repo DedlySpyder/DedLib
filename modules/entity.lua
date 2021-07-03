@@ -1,4 +1,4 @@
-local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib", prefix = "Entity"}
+local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib"}
 local Area = require("__DedLib__/modules/area")
 local Position = require("__DedLib__/modules/position")
 
@@ -9,23 +9,23 @@ function Entity.is_valid(entity) --TODO - performance? - cacheable (unit num + t
 end
 
 function Entity.area_of(entity)
-    Logger.trace("Finding area of entity")
+    Logger:trace("Finding area of entity")
     if Entity.is_valid(entity) then
         return Entity.area_of_bounding_box(entity.bounding_box)
     else
-        Logger.error("Entity is nil or invalid")
+        Logger:error("Entity is nil or invalid")
     end
 end
 
 function Entity.area_of_bounding_box(bb)
-    Logger.trace("Finding area of bounding box: %s", bb)
+    Logger:trace("Finding area of bounding box: %s", bb)
     bb = Area.standardize_bounding_box(bb)
     if bb then
         local area = (math.ceil(bb.right_bottom.x) - math.floor(bb.left_top.x)) * (math.ceil(bb.right_bottom.y) - math.floor(bb.left_top.y))
-        Logger.trace("Area of bounding box is <%s> tiles", area)
+        Logger:trace("Area of bounding box is <%s> tiles", area)
         return area
     else
-        Logger.error("Failed to standardize bounding box for valid entity")
+        Logger:error("Failed to standardize bounding box for valid entity")
     end
 end
 
@@ -38,7 +38,7 @@ end
 
 -- See `docs/entity_area_by_chunks.png` (on GitHub, not packaged in the mod) for examples on how this math makes sense
 function Entity.area_of_by_chunks(entity)
-    Logger.trace("Finding area of entity by chunks")
+    Logger:trace("Finding area of entity by chunks")
     if Entity.is_valid(entity) then
         local chunks, vertices = Entity.chunks_of(entity)
         return Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
@@ -46,14 +46,14 @@ function Entity.area_of_by_chunks(entity)
 end
 
 function Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
-    Logger.trace("Finding area between vertices <%s> within %d chunks", vertices, #chunks)
+    Logger:trace("Finding area between vertices <%s> within %d chunks", vertices, #chunks)
     if #chunks == 0 then
         return {}
 
     elseif #chunks == 1 then
         -- Use normal area_of if there is only 1 chunk anyways
         local areas = {{chunk = chunks[1], area = Entity.area_of(entity)}}
-        Logger.trace_block("Calculated areas of entity %s within 1 chunk: %s", entity.name, areas)
+        Logger:trace_block("Calculated areas of entity %s within 1 chunk: %s", entity.name, areas)
         return areas
 
     elseif #chunks == 2 then
@@ -93,7 +93,7 @@ function Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
             }
         else
             -- WTF??
-            Logger.fatal_block("Chunks for area_of_by_chunks calculation are unexpected: leftTopChunk <%s> rightBottomChunk <%s>",
+            Logger:fatal_block("Chunks for area_of_by_chunks calculation are unexpected: leftTopChunk <%s> rightBottomChunk <%s>",
                     leftTopChunk,
                     rightBottomChunk
             )
@@ -101,7 +101,7 @@ function Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
                     "on the mod portal with factorio-current.log file")
         end
 
-        Logger.trace_block("Calculated areas of entity %s within 2 chunks: %s", entity.name, areas)
+        Logger:trace_block("Calculated areas of entity %s within 2 chunks: %s", entity.name, areas)
         return areas
 
     else -- 4 Chunks
@@ -141,7 +141,7 @@ function Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
                 })
             }
         }
-        Logger.trace_block("Calculated areas of entity %s within 4 chunks: %s", entity.name, areas)
+        Logger:trace_block("Calculated areas of entity %s within 4 chunks: %s", entity.name, areas)
         return areas
     end
 end
@@ -153,7 +153,7 @@ end
 -- --- right_top position's chunk
 -- 2nd returned value is the vertices of the entity
 function Entity.chunks_of(entity)
-    Logger.trace("Finding chunks of entity")
+    Logger:trace("Finding chunks of entity")
     if Entity.is_valid(entity) then
         local bb = entity.bounding_box
         if bb then
@@ -165,7 +165,7 @@ function Entity.chunks_of(entity)
             local chunks = {leftTopChunk}
             -- If the left top and right bottom are in the same chunk, then the whole entity is in the same chunk
             if Position.is_equal(leftTopChunk, rightBottomChunk) then
-                Logger.trace("Entity %s is only in one chunk: %s", entity.name, leftTopChunk)
+                Logger:trace("Entity %s is only in one chunk: %s", entity.name, leftTopChunk)
                 return chunks
             else
                 -- If the 2 opposing corners are in different chunks then the non-checked corners could also be in different chunks
@@ -183,12 +183,12 @@ function Entity.chunks_of(entity)
                     table.insert(chunks, leftBottomChunk)
                     table.insert(chunks, rightTopChunk)
                 end
-                Logger.trace("Entity %s is in multiple chunks: %s", entity.name, chunks)
+                Logger:trace("Entity %s is in multiple chunks: %s", entity.name, chunks)
                 return chunks, vertices
             end
         end
     else
-        Logger.error("Entity is nil, invalid, or missing bounding_box")
+        Logger:error("Entity is nil, invalid, or missing bounding_box")
         return {}, {}
     end
 end

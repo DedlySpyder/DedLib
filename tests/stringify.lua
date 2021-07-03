@@ -1,4 +1,4 @@
-local Logger = require("modules/logger").create{modName = "DedLib", prefix = "Stringify_Test"}
+local Logger = require("modules/logger").create("Testing")
 local Stringify = require("modules/stringify")
 local Assert = require("modules/testing/assert")
 local Util = require("modules/util")
@@ -42,7 +42,7 @@ for objectName, generateArgsFunc in pairs(LUA_OBJECTS) do
     StringifyTests[name] = {
         generateArgsFunc = generateArgsFunc,
         func = function(object)
-            Logger.debug("Testing is lua object on %s", objectName)
+            Logger:debug("Testing is lua object on %s", objectName)
             local actual = Stringify.is_lua_object(object)
             Assert.assert_true(actual, "Input failed for lua_object <" .. objectName .. ">: " .. serpent.line(object))
         end
@@ -52,7 +52,7 @@ end
 local isLuaObjectFalseTests = function(testValue)
     local testValueType = type(testValue)
     StringifyTests["test_is_lua_object__false_" .. testValueType] = function()
-        Logger.debug("Testing is lua object on type %s: %s", testValueType, testValue)
+        Logger:debug("Testing is lua object on type %s: %s", testValueType, testValue)
         local actual = Stringify.is_lua_object(testValue)
         Assert.assert_false(actual, "Input failed for lua_object: " .. tostring(testValue))
     end
