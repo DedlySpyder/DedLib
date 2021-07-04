@@ -194,6 +194,220 @@ function LoggerTests.test_get_level_value_trace()
 end
 
 
+-- Level less than tests
+function LoggerTests.test_will_print_for_level__will_print()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "warn"
+    local test = "fatal"
+    local actual = logger:will_print_for_level(test)
+
+    Assert.assert_true(actual, "Input failed: " .. serpent.line(test))
+end
+
+function LoggerTests.test_will_print_for_level__will_print_equals()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "warn"
+    local test = "warn"
+    local actual = logger:will_print_for_level(test)
+
+    Assert.assert_true(actual, "Input failed: " .. serpent.line(test))
+end
+
+function LoggerTests.test_will_print_for_level__will_not_print()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "warn"
+    local test = "info"
+    local actual = logger:will_print_for_level(test)
+
+    Assert.assert_false(actual, "Input failed: " .. serpent.line(test))
+end
+
+
+-- Calculate highest log level tests
+function LoggerTests.test_calculate_highest_log_level__console_log()
+    local logger = Logger.create()
+    local expected = "debug"
+    logger.CONSOLE_LOG_LEVEL = expected
+    logger.FILE_LOG_LEVEL = "fatal"
+
+    logger:_calculate_highest_log_level()
+
+    Assert.assert_equals(expected, logger.HIGHEST_LOG_LEVEL)
+end
+
+function LoggerTests.test_calculate_highest_log_level__file_log()
+    local logger = Logger.create()
+    local expected = "debug"
+    logger.CONSOLE_LOG_LEVEL = "fatal"
+    logger.FILE_LOG_LEVEL = expected
+
+    logger:_calculate_highest_log_level()
+
+    Assert.assert_equals(expected, logger.HIGHEST_LOG_LEVEL)
+end
+
+function LoggerTests.test_calculate_highest_log_level__root_console_log()
+    local logger = Logger.create()
+    local expected = "debug"
+    logger.CONSOLE_LOG_LEVEL = nil
+    logger.ROOT_CONSOLE_LOG_LEVEL = expected
+    logger.FILE_LOG_LEVEL = "fatal"
+
+    logger:_calculate_highest_log_level()
+
+    Assert.assert_equals(expected, logger.HIGHEST_LOG_LEVEL)
+end
+
+function LoggerTests.test_calculate_highest_log_level__root_file_log()
+    local logger = Logger.create()
+    local expected = "debug"
+    logger.CONSOLE_LOG_LEVEL = "fatal"
+    logger.FILE_LOG_LEVEL = nil
+    logger.ROOT_FILE_LOG_LEVEL = expected
+
+    logger:_calculate_highest_log_level()
+
+    Assert.assert_equals(expected, logger.HIGHEST_LOG_LEVEL)
+end
+
+
+-- Generate log functions tests
+function LoggerTests.test_generate_log_functions__off()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "off"
+    logger:_generate_log_functions()
+
+    Assert.assert_equals(logger._stub, rawget(logger, "fatal"), "Stub function not found")
+end
+
+function LoggerTests.test_generate_log_functions__off_with_override()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "off"
+    logger:_generate_log_functions(true)
+
+    Assert.assert_equals(logger._stub, rawget(logger, "fatal"), "Stub function not found")
+end
+
+function LoggerTests.test_generate_log_functions__no_override()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "fatal"
+    logger.CONSOLE_LOG_LEVEL = nil
+    logger.FILE_LOG_LEVEL = nil
+    logger:_generate_log_functions()
+
+    Assert.assert_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
+end
+
+function LoggerTests.test_generate_log_functions__root_override()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "fatal"
+    logger:_generate_log_functions(true)
+
+    Assert.assert_not_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
+    Assert.assert_not_equals(logger._stub, rawget(logger, "fatal"), "Stub function found")
+end
+
+function LoggerTests.test_generate_log_functions__console_override()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "fatal"
+    logger.CONSOLE_LOG_LEVEL = "warn"
+    logger.FILE_LOG_LEVEL = nil
+    logger:_generate_log_functions()
+
+    Assert.assert_not_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
+    Assert.assert_not_equals(logger._stub, rawget(logger, "fatal"), "Stub function found")
+end
+
+function LoggerTests.test_generate_log_functions__file_override()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "fatal"
+    logger.CONSOLE_LOG_LEVEL = nil
+    logger.FILE_LOG_LEVEL = "warn"
+    logger:_generate_log_functions()
+
+    Assert.assert_not_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
+    Assert.assert_not_equals(logger._stub, rawget(logger, "fatal"), "Stub function found")
+end
+
+function LoggerTests.test_generate_log_functions__both_override()
+    local logger = Logger.create()
+    logger.HIGHEST_LOG_LEVEL = "fatal"
+    logger.CONSOLE_LOG_LEVEL = "warn"
+    logger.FILE_LOG_LEVEL = "info"
+    logger:_generate_log_functions()
+
+    Assert.assert_not_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
+    Assert.assert_not_equals(logger._stub, rawget(logger, "fatal"), "Stub function found")
+end
+
+
+-- Insert method tests
+function LoggerTests.test_insert_method__stub()
+    local logger = Logger.create()
+    local consoleLevelValue = -1
+    local fileLevelValue = -1
+    logger:_insert_method("fatal", consoleLevelValue, fileLevelValue)
+
+    Assert.assert_not_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
+    Assert.assert_not_nil(rawget(logger, "fatal_block"), "Unexpected fatal_block log function")
+    Assert.assert_equals(logger._stub, rawget(logger, "fatal"), "Unexpected stub function")
+    Assert.assert_equals(logger._stub, rawget(logger, "fatal"), "Unexpected stub function")
+end
+
+function LoggerTests.test_insert_method__not_stub()
+    local logger = Logger.create()
+    local consoleLevelValue = 100
+    local fileLevelValue = 100
+    logger:_insert_method("fatal", consoleLevelValue, fileLevelValue)
+
+    Assert.assert_not_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
+    Assert.assert_not_nil(rawget(logger, "fatal_block"), "Unexpected fatal_block log function")
+    Assert.assert_not_equals(logger._stub, rawget(logger, "fatal"), "Unexpected stub function")
+    Assert.assert_not_equals(logger._stub, rawget(logger, "fatal"), "Unexpected stub function")
+end
+
+
+-- Get inner log function tests
+function LoggerTests.test_get_inner_log_function__log_both()
+    local logger = Logger.create()
+    local consoleLevelValue = 100
+    local fileLevelValue = 100
+    local logFunc = logger:_get_inner_log_function("fatal", consoleLevelValue, fileLevelValue)
+
+    Assert.assert_not_nil(logFunc, "Unexpected log function, nil status")
+    Assert.assert_equals(logger._log_both, logFunc, "Unexpected stub function")
+end
+
+function LoggerTests.test_get_inner_log_function__log_console()
+    local logger = Logger.create()
+    local consoleLevelValue = 100
+    local fileLevelValue = -1
+    local logFunc = logger:_get_inner_log_function("fatal", consoleLevelValue, fileLevelValue)
+
+    Assert.assert_not_nil(logFunc, "Unexpected log function, nil status")
+    Assert.assert_equals(logger._log_console, logFunc, "Unexpected stub function")
+end
+
+function LoggerTests.test_get_inner_log_function__log_file()
+    local logger = Logger.create()
+    local consoleLevelValue = -1
+    local fileLevelValue = 100
+    local logFunc = logger:_get_inner_log_function("fatal", consoleLevelValue, fileLevelValue)
+
+    Assert.assert_not_nil(logFunc, "Unexpected log function, nil status")
+    Assert.assert_equals(logger._log_file, logFunc, "Unexpected stub function")
+end
+
+function LoggerTests.test_get_inner_log_function__stub()
+    local logger = Logger.create()
+    local consoleLevelValue = -1
+    local fileLevelValue = -1
+    local logFunc = logger:_get_inner_log_function("fatal", consoleLevelValue, fileLevelValue)
+
+    Assert.assert_nil(logFunc, "Unexpected log function, nil status")
+end
+
+
 -- _log tests
 local logLogger = Logger.create{modName = "ModName", prefix = "Prefix"}
 local resetLogLogger = function()
