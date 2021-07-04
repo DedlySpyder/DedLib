@@ -99,6 +99,19 @@ function Assert.assert_equals(expected, actual, message)
     end
 end
 
+function Assert.assert_not_equals(expected, actual, message)
+    if serpent.line(expected) == serpent.line(actual) then --TODO - hacky - make better way to compare types generically (other asserts need it as well)
+        Assert._fail(
+                message,
+                "not equals",
+                "Expected",
+                expected,
+                "Actual",
+                actual
+        )
+    end
+end
+
 function Assert.assert_equals_exactly(expected, actual, message)
     if expected ~= actual then
         Assert._fail(
