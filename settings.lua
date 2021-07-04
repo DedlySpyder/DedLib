@@ -3,7 +3,7 @@ data:extend({
 	{
 		name = "DedLib_logger_level_console",
 		type = "string-setting",
-		setting_type = "startup",
+		setting_type = "runtime-global",
 		default_value = "off",
 		allowed_values = {"off", "fatal", "error", "warn", "info", "debug", "trace"},
 		order = "900"
