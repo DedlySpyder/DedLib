@@ -71,7 +71,7 @@ function Tester.add_tests(tests, testerData)
         end
     else
         Logger:error('Failed to add new tests, variable needs to be a table of "test_name" -> test_function')
-        if Logger:level_is_less_than("debug") then
+        if not Logger:will_print_for_level("debug") then
             Logger:info("Enable debug logging for more information.")
         else
             Logger:debug(debug.traceback())
@@ -252,7 +252,7 @@ function Tester._report_failed()
     end
     Logger:info("    %d failed", failedCount)
 
-    if Logger:level_is_less_than("debug") then
+    if not Logger:will_print_for_level("debug") then
         Logger:info("")
         Logger:info("Enable debug logging for more information.")
     end

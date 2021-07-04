@@ -97,8 +97,8 @@ end
 
 -- Quick check to see if a log level will print anything
 -- Returns true when the provided log level WILL print something
-function Logger:level_is_less_than(level)
-    return self.get_level_value(self.HIGHEST_LOG_LEVEL) < self.get_level_value(level)
+function Logger:will_print_for_level(level)
+    return self.get_level_value(self.HIGHEST_LOG_LEVEL) >= self.get_level_value(level)
 end
 
 
