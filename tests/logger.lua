@@ -135,6 +135,49 @@ function LoggerTests.test_override_log_levels__unset_both()
     Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
 
+function LoggerTests.test_override_log_levels__invalid_console_level()
+    local log = Logger.create()
+    log:override_log_levels("foo")
+
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
+    Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
+end
+
+function LoggerTests.test_override_log_levels__invalid_file_level()
+    local log = Logger.create()
+    log:override_log_levels(nil, "foo")
+
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
+    Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
+end
+
+function LoggerTests.test_override_log_levels__invalid_both_levels()
+    local log = Logger.create()
+    log:override_log_levels("foo", "bar")
+
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
+    Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
+end
+
+
+-- Valid log level tests
+for _, level in ipairs(Logger.ALL_LOG_LEVELS) do
+    LoggerTests["test_is_valid_log_level__" .. level] = function()
+        Assert.assert_true(Logger.is_valid_log_level(level))
+    end
+end
+
+function LoggerTests.test_is_valid_log_level__invalid()
+    Assert.assert_false(Logger.is_valid_log_level("foobar"))
+end
+
+
 
 -- Get specific log level value tests
 LoggerTests["test_get_console_log_level_value_override"] = {

@@ -9,6 +9,7 @@ Logger.__index = Logger
 
 -- -- Static Values -- --
 Logger.ALL_LOG_LEVELS = {"off", "fatal", "error", "warn", "info", "debug", "trace"}
+Logger._ALL_LOG_LEVELS_INDEX = Table.indexify(Logger.ALL_LOG_LEVELS)
 
 -- All valid logging method names
 Logger.LOG_METHODS = Table.flatten(Table.map(Logger.ALL_LOG_LEVELS, function(level)
@@ -64,6 +65,19 @@ function Logger.create(args)
 end
 
 function Logger:override_log_levels(consoleLogLevel, fileLogLevel)
+    if not ((consoleLogLevel == nil or Logger.is_valid_log_level(consoleLogLevel)) and
+            (fileLogLevel == nil or Logger.is_valid_log_level(fileLogLevel))) then
+        log(string.format(
+                "[ERROR] Logger override log levels failed for %s/%s logger.\nLevels used: %s, %s\nValid levels: %s",
+                self.MOD_NAME,
+                self.PREFIX,
+                consoleLogLevel,
+                fileLogLevel,
+                serpent.line(Logger.ALL_LOG_LEVELS)
+        ))
+        return
+    end
+
     self.CONSOLE_LOG_LEVEL = consoleLogLevel
     self.FILE_LOG_LEVEL = fileLogLevel
 
@@ -80,6 +94,10 @@ end
 
 
 -- -- Log Level  -- --
+function Logger.is_valid_log_level(level)
+    return Logger._ALL_LOG_LEVELS_INDEX[level] ~= nil
+end
+
 function Logger:get_console_log_level_value()
     return self.get_level_value(self.CONSOLE_LOG_LEVEL)
 end
