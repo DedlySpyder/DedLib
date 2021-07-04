@@ -149,20 +149,10 @@ function Logger:_generate_log_functions(isRoot)
 end
 
 function Logger:_insert_method(level, consoleLevelValue, fileLevelValue)
-    local levelValue = self.get_level_value(level)
     local upperLevel = string.upper(level)
 
-    local logConsole = consoleLevelValue >= levelValue
-    local logFile = fileLevelValue >= levelValue
-
-    local logFunc
-    if logConsole and logFile then
-        logFunc = self._log_both
-    elseif logConsole then
-        logFunc = self._log_console
-    elseif logFile then
-        logFunc = self._log_file
-    else
+    local logFunc = Logger:_get_inner_log_function(level, consoleLevelValue, fileLevelValue)
+    if logFunc == nil then
         self[level] = self._stub
         self[level .. "_block"] = self._stub
         return
@@ -170,6 +160,21 @@ function Logger:_insert_method(level, consoleLevelValue, fileLevelValue)
 
     self[level] = self._generate_log_func(upperLevel, logFunc, false)
     self[level .. "_block"] = self._generate_log_func(upperLevel, logFunc, true)
+end
+
+function Logger:_get_inner_log_function(level, consoleLevelValue, fileLevelValue)
+    local levelValue = self.get_level_value(level)
+    local logConsole = consoleLevelValue >= levelValue
+    local logFile = fileLevelValue >= levelValue
+
+    if logConsole and logFile then
+        return self._log_both
+    elseif logConsole then
+        return self._log_console
+    elseif logFile then
+        return self._log_file
+    end
+    -- Else this should be a stub function
 end
 
 function Logger._generate_log_func(upperLevel, logFunc, blockPrint)
