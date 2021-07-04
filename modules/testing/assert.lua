@@ -8,6 +8,7 @@ value of the table is compared.
 This module can be called directly or used from the main `__DedLib__/modules/testing/tester` file as `Tester.Assert...`
 ]]--
 local Util = require("__DedLib__/modules/util")
+local Stringify = require("__DedLib__/modules/stringify")
 
 local Assert = {}
 
@@ -24,9 +25,9 @@ function Assert._fail(message, assertType, assertVar1Name, assertVar1Value, asse
                 message,
                 assertType,
                 assertVar1Name,
-                serpent.line(assertVar1Value),
+                Stringify.to_string(assertVar1Value),
                 assertVar2Name,
-                serpent.line(assertVar2Value)
+                Stringify.to_string(assertVar2Value)
         )
     else
         message = string.format(
@@ -34,7 +35,7 @@ function Assert._fail(message, assertType, assertVar1Name, assertVar1Value, asse
                 message,
                 assertType,
                 assertVar1Name,
-                serpent.line(assertVar1Value)
+                Stringify.to_string(assertVar1Value)
         )
     end
 
