@@ -125,6 +125,16 @@ function LoggerTests.test_override_log_levels__both_log_levels()
     Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
 
+function LoggerTests.test_override_log_levels__unset_both()
+    local log = Logger.create{levelOverride = "warn"}
+    log:override_log_levels()
+
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
+    Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
+end
+
 
 -- Get specific log level value tests
 LoggerTests["test_get_console_log_level_value_override"] = {

@@ -67,8 +67,15 @@ function Logger:override_log_levels(consoleLogLevel, fileLogLevel)
     self.CONSOLE_LOG_LEVEL = consoleLogLevel
     self.FILE_LOG_LEVEL = fileLogLevel
 
-    self:_calculate_highest_log_level()
-    self:_generate_log_functions()
+    if self:is_overriding_log_levels() then
+        self:_calculate_highest_log_level()
+        self:_generate_log_functions()
+    else
+        self.HIGHEST_LOG_LEVEL = nil
+        for _, funcName in ipairs(self.LOG_METHODS) do
+            self[funcName] = nil
+        end
+    end
 end
 
 
