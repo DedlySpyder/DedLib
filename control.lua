@@ -1,7 +1,7 @@
 local Logger = require("modules/logger").create()
 
+local testRunner = require("tests/main")
 function run_tests()
-    local testRunner = require("tests/main")
     script.on_event(defines.events.on_tick, function(e)
         testRunner()
         script.on_event(defines.events.on_tick, nil)

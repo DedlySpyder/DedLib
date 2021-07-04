@@ -23,11 +23,13 @@ local add_tester_results = function(results)
     tester_results["failed"] = tester_results["failed"] + results["failed"]
 end
 
-if remote.interfaces["freeplay"] then
-    script.on_init(function() -- Stringify tests can't have the freeplay scenario
-        remote.call("freeplay", "set_disable_crashsite", true)
-        remote.call("freeplay", "set_skip_intro", true)
-    end)
+if settings.startup["DedLib_run_tests"].value then
+    if remote.interfaces["freeplay"] then
+        script.on_init(function() -- Stringify tests can't have the freeplay scenario
+            remote.call("freeplay", "set_disable_crashsite", true)
+            remote.call("freeplay", "set_skip_intro", true)
+        end)
+    end
 end
 
 return function()
