@@ -3,7 +3,7 @@ local Debug = require("debug")
 local Table = require("table")
 local Util = require("util")
 
-local Logger = {} -- TODO - make sure this works and organize this file
+local Logger = {}
 Logger.__index = Logger
 
 
@@ -113,7 +113,6 @@ function Logger.get_level_value(level)
     if levelType == "number" then
         return level
     elseif levelType ~= "string" then
-        log("[WARN] Logger init: Attempted to get value of non-string level: " .. serpent.line(level))
         return 0
     end
 
@@ -245,7 +244,12 @@ function Logger:_format_message(format, formatArgs, level, count)
     if formatArgs.n > 0 then
         format = string.format(format, unpack(formatArgs))
     end
-    return self._get_tick(count) .. "[" .. self.MOD_NAME .. "]" .. self.PREFIX .. "[" .. Debug.get_short_current_line_string(6) .. "] " .. level .. " - " .. format
+    return self._get_tick(count) ..
+            "[" .. self.MOD_NAME .. "]" ..
+            self.PREFIX ..
+            "[" .. Debug.get_short_current_line_string(6) .. "] "
+            .. level .. " - " ..
+            format
 end
 
 
@@ -289,143 +293,20 @@ function Logger._stub() end -- No-op
 
 
 
--- Logger Settings
-function Logger._refresh_settings() -- TODO allow this to be used by child loggers as well? or atleast let them change it
+-- -- Initialize the root logger -- --
+function Logger:_configure_root_logger()
     if settings then
-        Logger.ROOT_CONSOLE_LOG_LEVEL = settings.startup["DedLib_logger_level_console"].value
-        Logger.ROOT_FILE_LOG_LEVEL = settings.startup["DedLib_logger_level_file"].value
-        if Logger.ROOT_FILE_LOG_LEVEL == "off" then Logger.ROOT_FILE_LOG_LEVEL = "fatal" end -- Choice is an illusion
+        local fileLogLevel = settings.startup["DedLib_logger_level_file"].value
+        Logger:override_log_levels(
+                settings.startup["DedLib_logger_level_console"].value,
+                Util.ternary(fileLogLevel == "off", "fatal", fileLogLevel) -- Choice is an illusion
+        )
     else
-        -- We're in the settings phase, so just stick with the defaults, people can override if they want
-        Logger.ROOT_CONSOLE_LOG_LEVEL = "off"
-        Logger.ROOT_FILE_LOG_LEVEL = "error"
+        -- We're in the settings phase, so just stick with the defaults, others can override if they want
+        Logger:override_log_levels("off", "error")
     end
-
-    -- TODO refresh log functions & HIGHEST_LOG_LEVEL
-    Logger:_calculate_highest_log_level()
-    Logger:_generate_log_functions(true)
 end
-Logger._refresh_settings() -- TODO root logger setup at the end of this
+Logger:_configure_root_logger()
 
-
-
-
-
-
-
-
-
-
-
-
-
---[[
-function Logger.create(loggerArgs)
-    if not loggerArgs then
-        loggerArgs = {}
-    end
-    if type(loggerArgs) == "string" then
-        loggerArgs = { prefix = loggerArgs }
-    end
-    local modName = get_mod_name(loggerArgs.modName)
-
-    local consoleLogLevel = loggerArgs.consoleLevelOverride or loggerArgs.levelOverride or Logger.ROOT_CONSOLE_LOG_LEVEL
-    local consoleConfiguredLogLevel = Logger.get_level_value(consoleLogLevel)
-    local fileLogLevel = loggerArgs.fileLevelOverride or loggerArgs.levelOverride or Logger.ROOT_FILE_LOG_LEVEL
-    local fileConfiguredLogLevel = Logger.get_level_value(fileLogLevel)
-
-    local prefix = ""
-    if loggerArgs.prefix then
-        prefix = "[" .. loggerArgs.prefix .. "]"
-    end
-
-    local l = {}
-    local function stub() end
-
-    if consoleConfiguredLogLevel > fileConfiguredLogLevel then
-        l._LOG_LEVEL = consoleLogLevel
-    else
-        -- Either file is higher, or they are the same
-        l._LOG_LEVEL = fileLogLevel
-    end
-
-    function l.level_is_less_than(level)
-        return Logger.get_level_value(l._LOG_LEVEL) < Logger.get_level_value(level)
-    end
-
-    -- Return stub logger
-    if consoleConfiguredLogLevel <= 1 and fileConfiguredLogLevel <= 1 then
-        l.fatal = stub
-        l.error = stub
-        l.warn = stub
-        l.info = stub
-        l.debug = stub
-        l.trace = stub
-        return l
-    end
-
-    function l._format_message(format, formatArgs, level, count)
-        if formatArgs.n > 0 then
-            format = string.format(format, unpack(formatArgs))
-        end
-        return Logger._get_tick(count) .. "[" .. modName .. "]" .. prefix .. "[" .. Debug.get_short_current_line_string(6) .. "] " .. level .. " - " .. format
-    end
-
-    -- All args are assumed non-nil
-    function l._log(logFunc, format, formatArgs, level)
-        local formatted = l._format_message(format, formatArgs, level)
-        if formatted == l._LAST_MESSAGE then
-            l._SAME_MESSAGE_COUNT = l._SAME_MESSAGE_COUNT + 1
-            formatted = l._format_message(format, formatArgs, level, l._SAME_MESSAGE_COUNT)
-        else
-            l._SAME_MESSAGE_COUNT = 0
-            l._LAST_MESSAGE = formatted
-        end
-        logFunc(formatted)
-    end
-
-    function l._generate_log_func(upperLevel, logFunc, blockPrint)
-        return function(format, ...)
-            local formatArgs = Logger._stringify_args(table.pack(...), blockPrint)
-            format = Stringify.to_string(format, blockPrint)
-            l._log(logFunc, format, formatArgs, upperLevel)
-        end
-    end
-
-    local function insert_method(level)
-        local levelValue = Logger.get_level_value(level)
-        local upperLevel = string.upper(level)
-
-        local logConsole = consoleConfiguredLogLevel >= levelValue
-        local logFile = fileConfiguredLogLevel >= levelValue
-
-        local logFunc = nil
-        if logConsole and logFile then
-            logFunc = Logger._log_both
-        elseif logConsole then
-            logFunc = Logger._log_console
-        elseif logFile then
-            logFunc = Logger._log_file
-        else
-            l[level] = stub
-            l[level .. "_block"] = stub
-            return
-        end
-
-        l[level] = l._generate_log_func(upperLevel, logFunc, false)
-        l[level .. "_block"] = l._generate_log_func(upperLevel, logFunc, true)
-    end
-
-    -- Create all the `.[level]` and `.[level]_block` methods on the logger
-    insert_method("fatal")
-    insert_method("error")
-    insert_method("warn")
-    insert_method("info")
-    insert_method("debug")
-    insert_method("trace")
-
-    return l
-end
-]]--
 
 return Logger

@@ -178,12 +178,11 @@ function LoggerTests.test_is_valid_log_level__invalid()
 end
 
 
-
 -- Get specific log level value tests
 LoggerTests["test_get_console_log_level_value_override"] = {
     generateArgsFunc = function()
         -- Don't pick the root level for the test
-        if Logger.ROOT_CONSOLE_LOG_LEVEL == "off" then
+        if Logger.CONSOLE_LOG_LEVEL == "off" then
             return "fatal"
         else
             return "off"
@@ -201,7 +200,7 @@ LoggerTests["test_get_console_log_level_value_override"] = {
 LoggerTests["test_get_file_log_level_value_override"] = {
     generateArgsFunc = function()
         -- Don't pick the root level for the test
-        if Logger.ROOT_FILE_LOG_LEVEL == "off" then
+        if Logger.FILE_LOG_LEVEL == "off" then
             return "info"
         else
             return "off"
@@ -537,7 +536,7 @@ function LoggerTests.test__log_duplicate_messages()
 end
 
 
--- Format message tests -- no format string usage
+-- Format message tests
 local formatMessageLogger = Logger.create{modName = "ModName", prefix = "Prefix"}
 function LoggerTests.test_format_message_with_count()
     local message = ""
