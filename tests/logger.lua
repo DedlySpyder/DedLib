@@ -288,6 +288,44 @@ function LoggerTests.test_will_print_for_level__will_not_print()
 end
 
 
+-- Is overriding log levels tests
+function LoggerTests.test_is_overriding_log_levels__overriding_console()
+    local logger = Logger.create()
+    logger.CONSOLE_LOG_LEVEL = "warn"
+    logger.FILE_LOG_LEVEL = nil
+    local actual = logger:is_overriding_log_levels()
+
+    Assert.assert_true(actual)
+end
+
+function LoggerTests.test_is_overriding_log_levels__overriding_file()
+    local logger = Logger.create()
+    logger.CONSOLE_LOG_LEVEL = nil
+    logger.FILE_LOG_LEVEL = "warn"
+    local actual = logger:is_overriding_log_levels()
+
+    Assert.assert_true(actual)
+end
+
+function LoggerTests.test_is_overriding_log_levels__overriding_both()
+    local logger = Logger.create()
+    logger.CONSOLE_LOG_LEVEL = "warn"
+    logger.FILE_LOG_LEVEL = "warn"
+    local actual = logger:is_overriding_log_levels()
+
+    Assert.assert_true(actual)
+end
+
+function LoggerTests.test_is_overriding_log_levels__not_overriding()
+    local logger = Logger.create()
+    logger.CONSOLE_LOG_LEVEL = nil
+    logger.FILE_LOG_LEVEL = nil
+    local actual = logger:is_overriding_log_levels()
+
+    Assert.assert_false(actual)
+end
+
+
 -- Calculate highest log level tests
 function LoggerTests.test_calculate_highest_log_level__console_log()
     local logger = Logger.create()
