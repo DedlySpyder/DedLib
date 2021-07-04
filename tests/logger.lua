@@ -10,8 +10,8 @@ function LoggerTests.test_create_default()
 
     Assert.assert_equals(script.mod_name, log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("", log.PREFIX, "Unexpected prefix")
-    Assert.assert_nil(log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_nil(log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -21,8 +21,8 @@ function LoggerTests.test_create_set_mod_name()
 
     Assert.assert_equals("MOD", log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("", log.PREFIX, "Unexpected prefix")
-    Assert.assert_nil(log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_nil(log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -32,8 +32,8 @@ function LoggerTests.test_create_set_prefix()
 
     Assert.assert_equals(script.mod_name, log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("[PREFIX]", log.PREFIX, "Unexpected prefix")
-    Assert.assert_nil(log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_nil(log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -43,8 +43,8 @@ function LoggerTests.test_create_set_prefix_no_table()
 
     Assert.assert_equals(script.mod_name, log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("[PREFIX_1]", log.PREFIX, "Unexpected prefix")
-    Assert.assert_nil(log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_nil(log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -54,8 +54,8 @@ function LoggerTests.test_create_set_console_log_level()
 
     Assert.assert_equals(script.mod_name, log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("", log.PREFIX, "Unexpected prefix")
-    Assert.assert_equals("warn", log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_nil(log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_equals("warn", rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_not_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -65,8 +65,8 @@ function LoggerTests.test_create_set_file_log_level()
 
     Assert.assert_equals(script.mod_name, log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("", log.PREFIX, "Unexpected prefix")
-    Assert.assert_nil(log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_equals("warn", log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_equals("warn", rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_not_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -76,8 +76,8 @@ function LoggerTests.test_create_set_both_log_levels()
 
     Assert.assert_equals(script.mod_name, log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("", log.PREFIX, "Unexpected prefix")
-    Assert.assert_equals("warn", log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_equals("info", log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_equals("warn", rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_equals("info", rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_not_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -87,8 +87,40 @@ function LoggerTests.test_create_set_general_level_override()
 
     Assert.assert_equals(script.mod_name, log.MOD_NAME, "Unexpected mod name")
     Assert.assert_equals("", log.PREFIX, "Unexpected prefix")
-    Assert.assert_equals("warn", log.CONSOLE_LOG_LEVEL, "Unexpected console log level")
-    Assert.assert_equals("warn", log.FILE_LOG_LEVEL, "Unexpected file log level")
+    Assert.assert_equals("warn", rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_equals("warn", rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
+    Assert.assert_not_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
+    Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
+end
+
+
+-- Override log levels tests
+function LoggerTests.test_override_log_levels__console_log_level()
+    local log = Logger.create()
+    log:override_log_levels("warn")
+
+    Assert.assert_equals("warn", rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_nil(rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
+    Assert.assert_not_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
+    Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
+end
+
+function LoggerTests.test_override_log_levels__file_log_level()
+    local log = Logger.create()
+    log:override_log_levels(nil, "warn")
+
+    Assert.assert_nil(rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_equals("warn", rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
+    Assert.assert_not_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
+    Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
+end
+
+function LoggerTests.test_override_log_levels__both_log_levels()
+    local log = Logger.create()
+    log:override_log_levels("warn", "info")
+
+    Assert.assert_equals("warn", rawget(log, "CONSOLE_LOG_LEVEL"), "Unexpected console log level")
+    Assert.assert_equals("info", rawget(log, "FILE_LOG_LEVEL"), "Unexpected file log level")
     Assert.assert_not_nil(rawget(log, "HIGHEST_LOG_LEVEL"), "Unexpected highest log level")
     Assert.assert_not_nil(rawget(log, "fatal"), "Unexpected fatal log function")
 end
@@ -113,16 +145,6 @@ LoggerTests["test_get_console_log_level_value_override"] = {
     end
 }
 
-LoggerTests["test_get_console_log_level_value_root"] = {
-    func = function()
-        local logger = Logger.create()
-        local actual = logger:get_console_log_level_value()
-        local expected = Logger.get_level_value(Logger.ROOT_CONSOLE_LOG_LEVEL)
-
-        Assert.assert_equals(expected, actual)
-    end
-}
-
 LoggerTests["test_get_file_log_level_value_override"] = {
     generateArgsFunc = function()
         -- Don't pick the root level for the test
@@ -136,16 +158,6 @@ LoggerTests["test_get_file_log_level_value_override"] = {
         local logger = Logger.create({fileLevelOverride = override})
         local actual = logger:get_file_log_level_value()
         local expected = Logger.get_level_value(override)
-
-        Assert.assert_equals(expected, actual)
-    end
-}
-
-LoggerTests["test_get_file_log_level_value_root"] = {
-    func = function()
-        local logger = Logger.create()
-        local actual = logger:get_file_log_level_value()
-        local expected = Logger.get_level_value(Logger.ROOT_FILE_LOG_LEVEL)
 
         Assert.assert_equals(expected, actual)
     end
@@ -246,30 +258,6 @@ function LoggerTests.test_calculate_highest_log_level__file_log()
     Assert.assert_equals(expected, logger.HIGHEST_LOG_LEVEL)
 end
 
-function LoggerTests.test_calculate_highest_log_level__root_console_log()
-    local logger = Logger.create()
-    local expected = "debug"
-    logger.CONSOLE_LOG_LEVEL = nil
-    logger.ROOT_CONSOLE_LOG_LEVEL = expected
-    logger.FILE_LOG_LEVEL = "fatal"
-
-    logger:_calculate_highest_log_level()
-
-    Assert.assert_equals(expected, logger.HIGHEST_LOG_LEVEL)
-end
-
-function LoggerTests.test_calculate_highest_log_level__root_file_log()
-    local logger = Logger.create()
-    local expected = "debug"
-    logger.CONSOLE_LOG_LEVEL = "fatal"
-    logger.FILE_LOG_LEVEL = nil
-    logger.ROOT_FILE_LOG_LEVEL = expected
-
-    logger:_calculate_highest_log_level()
-
-    Assert.assert_equals(expected, logger.HIGHEST_LOG_LEVEL)
-end
-
 
 -- Generate log functions tests
 function LoggerTests.test_generate_log_functions__off()
@@ -296,15 +284,6 @@ function LoggerTests.test_generate_log_functions__no_override()
     logger:_generate_log_functions()
 
     Assert.assert_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
-end
-
-function LoggerTests.test_generate_log_functions__root_override()
-    local logger = Logger.create()
-    logger.HIGHEST_LOG_LEVEL = "fatal"
-    logger:_generate_log_functions(true)
-
-    Assert.assert_not_nil(rawget(logger, "fatal"), "Unexpected fatal log function")
-    Assert.assert_not_equals(logger._stub, rawget(logger, "fatal"), "Stub function found")
 end
 
 function LoggerTests.test_generate_log_functions__console_override()

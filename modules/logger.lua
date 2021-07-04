@@ -53,27 +53,32 @@ function Logger.create(args)
             ""
     )
 
-    log.CONSOLE_LOG_LEVEL = args.consoleLevelOverride or args.levelOverride
-    log.FILE_LOG_LEVEL = args.fileLevelOverride or args.levelOverride
-
-    if log.CONSOLE_LOG_LEVEL or log.FILE_LOG_LEVEL then
-        log:_calculate_highest_log_level()
-        log:_generate_log_functions()
+    if args.consoleLevelOverride or args.fileLevelOverride or args.levelOverride then
+        log:override_log_levels(
+                args.consoleLevelOverride or args.levelOverride,
+                args.fileLevelOverride or args.levelOverride
+        )
     end
 
     return log
 end
 
+function Logger:override_log_levels(consoleLogLevel, fileLogLevel)
+    self.CONSOLE_LOG_LEVEL = consoleLogLevel
+    self.FILE_LOG_LEVEL = fileLogLevel
+
+    self:_calculate_highest_log_level()
+    self:_generate_log_functions()
+end
+
 
 -- -- Log Level  -- --
 function Logger:get_console_log_level_value()
-    local level = self.CONSOLE_LOG_LEVEL or self.ROOT_CONSOLE_LOG_LEVEL
-    return self.get_level_value(level)
+    return self.get_level_value(self.CONSOLE_LOG_LEVEL)
 end
 
 function Logger:get_file_log_level_value()
-    local level = self.FILE_LOG_LEVEL or self.ROOT_FILE_LOG_LEVEL
-    return self.get_level_value(level)
+    return self.get_level_value(self.FILE_LOG_LEVEL)
 end
 
 -- Get the passed in level as a comparable value
@@ -101,6 +106,10 @@ function Logger:will_print_for_level(level)
     return self.get_level_value(self.HIGHEST_LOG_LEVEL) >= self.get_level_value(level)
 end
 
+function Logger:is_overriding_log_levels()
+    return rawget(self, "CONSOLE_LOG_LEVEL") ~= nil or rawget(self, "FILE_LOG_LEVEL") ~= nil
+end
+
 
 
 -- -- Internal Functions -- --
@@ -108,8 +117,8 @@ end
 
 -- -- Logger Setup -- --
 function Logger:_calculate_highest_log_level()
-    local consoleLogLevel = self.CONSOLE_LOG_LEVEL or self.ROOT_CONSOLE_LOG_LEVEL
-    local fileLogLevel = self.FILE_LOG_LEVEL or self.ROOT_FILE_LOG_LEVEL
+    local consoleLogLevel = self.CONSOLE_LOG_LEVEL
+    local fileLogLevel = self.FILE_LOG_LEVEL
 
     if self.get_level_value(consoleLogLevel) > self.get_level_value(fileLogLevel) then
         self.HIGHEST_LOG_LEVEL = consoleLogLevel
@@ -126,7 +135,7 @@ end
 --      Logger:info("info message")
 --      Logger:debug("%s message", "debug")
 --      Logger.info(Logger, "info message")
-function Logger:_generate_log_functions(isRoot)
+function Logger:_generate_log_functions()
     -- Stubbed logger
     if self.HIGHEST_LOG_LEVEL == "off" then
         for _, funcName in ipairs(self.LOG_METHODS) do
@@ -137,7 +146,7 @@ function Logger:_generate_log_functions(isRoot)
 
     -- If anything was overridden, then recreate all of the logger methods
     -- Otherwise all of them will be inherited up from the root logger
-    if isRoot or (self.CONSOLE_LOG_LEVEL or self.FILE_LOG_LEVEL) then
+    if self:is_overriding_log_levels() then
         local consoleLevelValue = self:get_console_log_level_value()
         local fileLevelValue = self:get_file_log_level_value()
 
@@ -151,7 +160,7 @@ end
 function Logger:_insert_method(level, consoleLevelValue, fileLevelValue)
     local upperLevel = string.upper(level)
 
-    local logFunc = Logger:_get_inner_log_function(level, consoleLevelValue, fileLevelValue)
+    local logFunc = self:_get_inner_log_function(level, consoleLevelValue, fileLevelValue)
     if logFunc == nil then
         self[level] = self._stub
         self[level .. "_block"] = self._stub
