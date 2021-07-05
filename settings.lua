@@ -15,13 +15,5 @@ data:extend({
 		default_value = "error",
 		allowed_values = {"off", "fatal", "error", "warn", "info", "debug", "trace"},
 		order = "910"
-	},
-
-	{
-		name = "DedLib_run_tests",
-		type = "bool-setting",
-		setting_type = "startup",
-		default_value = false,
-		order = "999"
 	}
 })

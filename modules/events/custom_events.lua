@@ -1,4 +1,4 @@
-local Logger = require("modules/logger").create{modName = "DedLib"}
+local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib"}
 
 --[[
 This module is for producing or consuming custom events. Either side of this interaction can use this module, or both can.
