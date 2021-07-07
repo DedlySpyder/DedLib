@@ -54,4 +54,15 @@ function Table.flatten(tbl)
     return t
 end
 
+function Table.compact_list(tbl)
+    local t = {}
+    for _, v in ipairs(tbl) do
+        if v ~= nil then
+            table.insert(t, v)
+        end
+    end
+    return t
+end
+
+
 return Table
