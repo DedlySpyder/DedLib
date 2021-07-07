@@ -5,6 +5,7 @@ local Util = require("util")
 
 local Logger = {}
 Logger.__index = Logger
+Logger._IS_LOGGER = true
 
 
 -- -- Static Values -- --
@@ -212,6 +213,7 @@ end
 
 function Logger._generate_log_func(upperLevel, logFunc, blockPrint)
     return function(self, format, ...)
+        if not self._IS_LOGGER then error("Invalid use of log function, proper syntax is Logger:" .. string.lower(upperLevel) .. "(...)") end
         local formatArgs = self._stringify_args(table.pack(...), blockPrint)
         format = Stringify.to_string(format, blockPrint)
         self:_log(logFunc, format, formatArgs, upperLevel)
