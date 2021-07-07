@@ -298,9 +298,12 @@ function Logger._stub() end -- No-op
 -- -- Initialize the root logger -- --
 function Logger._configure_root_logger()
     if settings then
+        local consoleLogLevel = "off"
+        if settings.global ~= nil then consoleLogLevel = settings.global["DedLib_logger_level_console"].value end
+
         local fileLogLevel = settings.startup["DedLib_logger_level_file"].value
         Logger:override_log_levels(
-                settings.global["DedLib_logger_level_console"].value,
+                consoleLogLevel,
                 Util.ternary(fileLogLevel == "off", "fatal", fileLogLevel) -- Choice is an illusion
         )
     else
