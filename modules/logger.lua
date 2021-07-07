@@ -1,7 +1,7 @@
-local Stringify = require("stringify")
-local Debug = require("debug")
-local Table = require("table")
-local Util = require("util")
+local Stringify = require("__DedLib__/modules/stringify")
+local Debug = require("__DedLib__/modules/debug")
+local Table = require("__DedLib__/modules/table")
+local Util = require("__DedLib__/modules/util")
 
 local Logger = {}
 Logger.__index = Logger

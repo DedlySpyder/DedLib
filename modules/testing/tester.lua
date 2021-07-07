@@ -5,8 +5,8 @@ local Util = require("__DedLib__/modules/util")
 
 local Tester = {}
 
-Tester.Assert = require("assert")
-Tester.Mock = require("mock")
+Tester.Assert = require("__DedLib__/modules/testing/assert")
+Tester.Mock = require("__DedLib__/modules/testing/mock")
 
 --[[
 TODO - notes on tester

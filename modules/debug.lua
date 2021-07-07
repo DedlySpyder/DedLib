@@ -1,5 +1,5 @@
 -- For common usage of the debug library
-local Util = require("util")
+local Util = require("__DedLib__/modules/util")
 
 local Debug = {}
 
