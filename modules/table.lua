@@ -39,6 +39,21 @@ function Table.map(tbl, func)
     return t
 end
 
+function Table.filter(tbl, func)
+    local t = {}
+    local isArr = #tbl > 0
+    for k, v in pairs(tbl) do
+        if func(v) then
+            if isArr then
+                table.insert(t, v)
+            else
+                t[k] = v
+            end
+        end
+    end
+    return t
+end
+
 -- Flatten by 1 layer
 function Table.flatten(tbl)
     local t = {}
