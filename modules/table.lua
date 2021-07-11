@@ -79,5 +79,11 @@ function Table.compact_list(tbl)
     return t
 end
 
+function Table.to_list(tbl)
+    if not tbl then return {} end
+    if #tbl == 0 then return {tbl} end
+    return tbl
+end
+
 
 return Table
