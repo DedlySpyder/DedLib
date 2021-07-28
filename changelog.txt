@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
-Date: 2021.05.25
+Date: 2021.07.27
   Features:
     - Custom_Events - Added module for producing/consuming custom events
     - Debug - Added module for common usage of Lua's debug module
