@@ -39,6 +39,15 @@ function Table.map(tbl, func)
     return t
 end
 
+function Table.swap_key_values(tbl)
+    local t = {}
+    if #tbl > 0 then return Table.indexify(tbl) end
+    for k, v in pairs(tbl) do
+        t[v] = k
+    end
+    return t
+end
+
 function Table.filter(tbl, func)
     local t = {}
     local isArr = #tbl > 0
