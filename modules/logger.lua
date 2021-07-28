@@ -48,7 +48,7 @@ function Logger.create(args)
     --  - modName arg
     --  - script.mod_name (in control)
     --  - default to "Data"
-    log.MOD_NAME = args.modName or Util.ternary(script ~= nil, script.mod_name, "Data")
+    log.MOD_NAME = args.modName or Table.get_or_default(script, "mod_name", "Data")
     log.PREFIX = Util.ternary(
             args.prefix ~= nil and args.prefix ~= "",
             string.format("[%s]", args.prefix),
