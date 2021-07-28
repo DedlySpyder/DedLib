@@ -1,4 +1,32 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.0.2
+Date: 2021.05.25
+  Features:
+    - Custom_Events - Added module for producing/consuming custom events
+    - Debug - Added module for common usage of Lua's debug module
+    - Help - Added module for parsing `help()` text
+    - Math - Added module for some easy math functions
+    - Player - Added module for some easy player validation functions
+    - Stringify - Added module, to parse anything to a pretty printing string (including lua_objects)
+    - Table - Added module for some common table manipulation
+    - Template/Storage - Added boilerplate for Storage modules
+    - Util - Added module to add some missing gaps in the lulib from Factorio core (with some aliases to not have to bounce back and forth)
+  Breaking Changes:
+    - Tester - Moved from `modules/tester.lua` to `modules/testing/tester.lua`
+    - Tester - Reworked Tester.run() output to return a full mapping of test results (doesn't break adding/running tests, only the results)
+    - Tester/Assert - Moved Tester asserts to `Tester.Assert` or `modules/testing/assert.lua`
+    - Tester/Mock - Moved Tester mocks to `Tester.Mock` or `modules/testing/mock.lua`
+    - Logger - Logger rewrite requires all log methods to use ":" for access (i.e. Logger:info(...))
+  Changes:
+    - Tester - Added optional `args`, `generateArgsFunc`, and `generateArgsFuncArgs` parameters when adding test(s) to supply to the test function
+    - Tester - Added optional `before` and `beforeArgs` to tests and testers, which will skip tests if they fail
+    - Tester - Added optional `after` and `afterArgs` to tests and testers, to cleanup resources
+    - Tester/Assert - Added several new asserts
+    - Logger - Updated to use Stringify under the hood
+    - Logger - Added "file:line" after the mod name (or prefix if included) on all log messages
+    - Logger - Rewrote logger to use inheritance from a root logger which uses DedLib settings, to support moving the log level settings to runtime
+    - Logger - Allow logger to change console log level mid game (must call __DedLib__/internal/logger `.on_init()` in script.on_init())
+---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 2021.05.25
   Features:
