@@ -1,6 +1,13 @@
 local Table = {}
 
 
+function Table.get_or_default(tbl, key, default)
+    if tbl and tbl[key] then
+        return tbl[key]
+    end
+    return default
+end
+
 function Table.indexify(tbl)
     local t = {}
     for _, v in pairs(tbl) do
