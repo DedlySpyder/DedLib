@@ -4,12 +4,12 @@ local Util = require("__DedLib__/modules/util")
 local Debug = {}
 
 function Debug.get_current_line(f)
-    local info = debug.getinfo(f)
+    local info = debug.getinfo(f, "Sl")
     return info.short_src, info.currentline
 end
 
 function Debug.get_defined_line(f)
-    local info = debug.getinfo(f)
+    local info = debug.getinfo(f, "S")
     return info.short_src, info.linedefined
 end
 

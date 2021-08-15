@@ -2,6 +2,7 @@
 Version: 0.0.3
 Date: 2021.08.00
   Changes:
+    - Debug - Switched to a more performant getinfo call
     - Stringify - Simplified no-op to_string calls when trying to stingify a string (less checks before returning it)
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
