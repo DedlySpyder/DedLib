@@ -107,7 +107,9 @@ end
 
 function Stringify.to_string(arg, block, notFirst)
     local argType = type(arg)
-    if argType == "table" then
+    if argType == "string" then
+        return arg
+    elseif argType == "table" then
         if Stringify.is_lua_object(arg) then
             local oName = arg.object_name
             if Stringify._ALWAYS_VALID[oName] or arg.valid then
@@ -132,8 +134,7 @@ function Stringify.to_string(arg, block, notFirst)
         end
         arg = t
     elseif argType == "function" then
-        argType = "string"
-        arg = "<function>"
+        return "<function>"
     end
 
     if notFirst then
@@ -145,10 +146,8 @@ function Stringify.to_string(arg, block, notFirst)
             else
                 return Stringify._SERPENT_LINE(arg)
             end
-        elseif argType ~= "string" then
-            return tostring(arg)
         else
-            return arg
+            return tostring(arg)
         end
     end
 end
