@@ -201,5 +201,77 @@ function Assert.assert_contains_key(expectedKey, list, message)
     end
 end
 
+function Assert.assert_throws_error(func, expectedError, message) --TODO -- make validations for these new ones
+    local s, e = pcall(func)
+    if s then
+        Assert._fail(
+                message,
+                "throws error",
+                "Function",
+                "succeeded"
+        )
+    elseif expectedError ~= nil then
+        if type(e) == "table" then
+            if serpent.line(e) ~= serpent.line(expectedError) then
+                Assert._fail(
+                        message,
+                        "throws error",
+                        "Expected error message",
+                        expectedError,
+                        "Actual error message",
+                        e
+                )
+            end
+        else
+            if not Util.String.ends_with(tostring(e), tostring(expectedError)) then
+                Assert._fail(
+                        message,
+                        "throws error",
+                        "Expected error message",
+                        expectedError,
+                        "Actual error message",
+                        e
+                )
+            end
+        end
+    end
+end
+
+function Assert.assert_throws_error_exactly(func, expectedError, message)
+    local s, e = pcall(func)
+    if s then
+        Assert._fail(
+                message,
+                "throws error exactly",
+                "Function",
+                "succeeded"
+        )
+    elseif expectedError ~= nil then
+        if type(e) == "table" then
+            if e ~= expectedError then
+                Assert._fail(
+                        message,
+                        "throws error exactly",
+                        "Expected error message",
+                        expectedError,
+                        "Actual error message",
+                        e
+                )
+            end
+        else
+            if not Util.String.ends_with(tostring(e), tostring(expectedError)) then
+                Assert._fail(
+                        message,
+                        "throws error exactly",
+                        "Expected error message",
+                        expectedError,
+                        "Actual error message",
+                        e
+                )
+            end
+        end
+    end
+end
+
 
 return Assert
