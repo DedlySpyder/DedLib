@@ -5,7 +5,7 @@ Date: 2021.08.00
     - Tester - Adding tests now validates the extra properties (such as testing if before/after are functions if they exist), a fatal error occurs if these validations fail
   Changes:
     - Debug - Switched to a more performant getinfo call
-    - Stringify - Simplified no-op to_string calls when trying to stingify a string (less checks before returning it)
+    - Stringify - Simplified no-op to_string calls when trying to stringify a string (less checks before returning it)
     - Tester - Almost full rewrite of the tester underlying code
     - Tester - Logs individual test group's successes during end report
     - Testing/Assert - Added throws error asserts
@@ -21,18 +21,18 @@ Date: 2021.07.27
     - Stringify - Added module, to parse anything to a pretty printing string (including lua_objects)
     - Table - Added module for some common table manipulation
     - Template/Storage - Added boilerplate for Storage modules
-    - Util - Added module to add some missing gaps in the lulib from Factorio core (with some aliases to not have to bounce back and forth)
+    - Util - Added module to add some missing gaps in the lualib from Factorio core (with some aliases to not have to bounce back and forth)
   Breaking Changes:
     - Tester - Moved from `modules/tester.lua` to `modules/testing/tester.lua`
     - Tester - Reworked Tester.run() output to return a full mapping of test results (doesn't break adding/running tests, only the results)
-    - Tester/Assert - Moved Tester asserts to `Tester.Assert` or `modules/testing/assert.lua`
-    - Tester/Mock - Moved Tester mocks to `Tester.Mock` or `modules/testing/mock.lua`
+    - Testing/Assert - Moved Tester asserts to `Tester.Assert` or `modules/testing/assert.lua`
+    - Testing/Mock - Moved Tester mocks to `Tester.Mock` or `modules/testing/mock.lua`
     - Logger - Logger rewrite requires all log methods to use ":" for access (i.e. Logger:info(...))
   Changes:
     - Tester - Added optional `args`, `generateArgsFunc`, and `generateArgsFuncArgs` parameters when adding test(s) to supply to the test function
     - Tester - Added optional `before` and `beforeArgs` to tests and testers, which will skip tests if they fail
     - Tester - Added optional `after` and `afterArgs` to tests and testers, to cleanup resources
-    - Tester/Assert - Added several new asserts
+    - Testing/Assert - Added several new asserts
     - Logger - Updated to use Stringify under the hood
     - Logger - Added "file:line" after the mod name (or prefix if included) on all log messages
     - Logger - Rewrote logger to use inheritance from a root logger which uses DedLib settings, to support moving the log level settings to runtime
