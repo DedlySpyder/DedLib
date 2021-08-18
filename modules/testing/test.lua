@@ -64,7 +64,7 @@ function Test.create_multiple(testsArgs)
             testsArgs = {testsArgs}
         else
             Logger:fatal("Failed to create tests with: %s", testsArgs)
-            error("Failed to create tests of type %s (expected table or function)", testsArgsType)
+            error("Failed to create tests of type " .. testsArgsType .. " (expected table or function)")
         end
     end
     Logger:trace("Creating multiple tests: %s", testsArgs)
