@@ -83,7 +83,8 @@ end
 
 -- Init functions
 function Test.valid_name(name)
-    return type(name) == "number" or string.find(string.lower(name), "test")
+    local nameType = type(name)
+    return nameType == "number" or (nameType == "string" and string.find(string.lower(name), "test"))
 end
 
 function Test.generate_name(name)
