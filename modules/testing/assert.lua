@@ -201,8 +201,9 @@ function Assert.assert_contains_key(expectedKey, list, message)
     end
 end
 
-function Assert.assert_throws_error(func, expectedError, message) --TODO -- make validations for these new ones
-    local s, e = pcall(func)
+function Assert.assert_throws_error(func, args, expectedError, message)
+    if type(args) ~= "table" then args = {args} end
+    local s, e = pcall(func, table.unpack(args or {}))
     if s then
         Assert._fail(
                 message,
@@ -237,8 +238,9 @@ function Assert.assert_throws_error(func, expectedError, message) --TODO -- make
     end
 end
 
-function Assert.assert_throws_error_exactly(func, expectedError, message)
-    local s, e = pcall(func)
+function Assert.assert_throws_error_exactly(func, args, expectedError, message)
+    if type(args) ~= "table" then args = {args} end
+    local s, e = pcall(func, table.unpack(args))
     if s then
         Assert._fail(
                 message,
