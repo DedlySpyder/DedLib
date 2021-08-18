@@ -28,14 +28,14 @@ Test.stacktrace = nil
 
 function Test.create(args, name)
     local argsType = type(args)
-    if type(args) == "function" then
+    if argsType == "function" then
         args = {func = args}
         argsType = "table"
     end
 
     if argsType ~= "table" then
         Logger:fatal("Failed to create test with: %s", args)
-        error("Failed to create test of type %s (expected table or function)", argsType)
+        error("Failed to create test of type " .. argsType .. " (expected table or function)")
     elseif args.__which == Test.__which then
         -- No-op
         return args
