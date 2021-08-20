@@ -10,6 +10,8 @@ local Test = {}
 Test.__index = Test
 Test.__which = "Test"
 
+Test.name = "uninitialized_test"
+
 Test.args = {}
 Test.generateArgsFunc = false
 Test.generateArgsFuncArgs = {}
