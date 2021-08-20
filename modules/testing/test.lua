@@ -108,7 +108,7 @@ function Test:validate_property(prop, expectedType, forceToList)
         if type(p) ~= expectedType then
             Logger:fatal("Validation for test failed: %s", self)
             error("Test " .. self.name .. " failed validation for " .. prop .. ", see logs for more details")
-        elseif forceToList then
+        elseif forceToList and #p == 0 and table_size(p) > 0 then
             self[prop] = {p}
         end
     end
