@@ -102,27 +102,28 @@ function Test.generate_name(name)
     end
 end
 
-function Test:validate_property(prop, expectedType, forceToList)
+function Test:validate_property(prop, expectedType)
     local p = rawget(self, prop)
     if p ~= nil then
-        if type(p) ~= expectedType then
+        local pType = type(p)
+        if pType ~= expectedType then
             Logger:fatal("Validation for test failed: %s", self)
             error("Test " .. self.name .. " failed validation for " .. prop .. ", see logs for more details")
-        elseif forceToList and #p == 0 and table_size(p) > 0 then
+        elseif expectedType == "table" and #p == 0 and table_size(p) > 0 then
             self[prop] = {p}
         end
     end
 end
 
 function Test:validate()
-    self:validate_property("args", "table", true)
+    self:validate_property("args", "table")
     self:validate_property("generateArgsFunc", "function")
-    self:validate_property("generateArgsFuncArgs", "table", true)
+    self:validate_property("generateArgsFuncArgs", "table")
     self:validate_property("func", "function")
     self:validate_property("before", "function")
-    self:validate_property("beforeArgs", "table", true)
+    self:validate_property("beforeArgs", "table")
     self:validate_property("after", "function")
-    self:validate_property("afterArgs", "table", true)
+    self:validate_property("afterArgs", "table")
 end
 
 
