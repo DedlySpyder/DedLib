@@ -206,12 +206,19 @@ function Test:run()
 end
 
 function Test.parse_reason(reason)
+    local message, stacktrace = reason, nil
     if type(reason) == "table" then
-        if reason.message and reason.stacktrace then
-            return Stringify.to_string(reason.message), reason.stacktrace
+        if reason.message or reason.stacktrace then
+            message = reason.message
+            stacktrace = reason.stacktrace
         end
     end
-    return Stringify.to_string(reason)
+
+    if message ~= nil then
+        return Stringify.to_string(message), stacktrace
+    else
+        return nil, stacktrace
+    end
 end
 
 function Test:set_reason(reason, reasonPrefix)
