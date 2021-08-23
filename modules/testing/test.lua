@@ -235,24 +235,26 @@ function Test:set_running()
     self.running = true
 end
 
-function Test:set_skipped(reason, reasonPrefix)
-    self.state = "skipped"
+function Test:_set_done()
     self.running = false
     self.done = true
+end
+
+function Test:set_skipped(reason, reasonPrefix)
+    self.state = "skipped"
+    self:_set_done()
     self:set_reason(reason, reasonPrefix)
 end
 
 function Test:set_failed(reason, reasonPrefix)
     self.state = "failed"
-    self.running = false
-    self.done = true
+    self:_set_done()
     self:set_reason(reason, reasonPrefix)
 end
 
 function Test:set_succeeded()
     self.state = "succeeded"
-    self.running = false
-    self.done = true
+    self:_set_done()
 end
 
 
