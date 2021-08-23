@@ -225,7 +225,7 @@ function Test:set_reason(reason, reasonPrefix)
     local message, stacktrace = Test.parse_reason(reason)
     if reasonPrefix or message then
         -- Otherwise just bubble up the default unknown
-        self.error = (reasonPrefix or "") .. message
+        self.error = (reasonPrefix or "") .. (message or "")
     end
     self.stacktrace = stacktrace
 end
