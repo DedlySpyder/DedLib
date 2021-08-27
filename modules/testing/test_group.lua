@@ -4,17 +4,7 @@ local Util = require("__DedLib__/modules/util")
 
 local Test = require("__DedLib__/modules/testing/test")
 
-local ALL_TEST_GROUPS = {
-    incomplete = {},
-    skipped = {},
-    completed = {}
-}
-
-local ALL_TEST_GROUP_COUNTS = {
-    skipped = 0,
-    failed = 0,
-    succeeded = 0
-}
+local ALL_TEST_GROUPS, ALL_TEST_GROUP_COUNTS
 
 local TestGroup = {}
 TestGroup.__index = TestGroup
@@ -80,6 +70,21 @@ end
 function TestGroup.get_all_group_counts()
     return ALL_TEST_GROUP_COUNTS
 end
+
+function TestGroup.reset_all_groups()
+    ALL_TEST_GROUPS = {
+        incomplete = {},
+        skipped = {},
+        completed = {}
+    }
+
+    ALL_TEST_GROUP_COUNTS = {
+        skipped = 0,
+        failed = 0,
+        succeeded = 0
+    }
+end
+TestGroup.reset_all_groups()
 
 
 -- Init functions
