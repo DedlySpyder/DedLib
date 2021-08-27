@@ -85,7 +85,7 @@ end
 -- Init functions
 function TestGroup.generate_name(name)
     if name == nil then
-        return "Unnamed Tester #" .. #ALL_TEST_GROUPS.incomplete
+        return "Unnamed Test Group #" .. #ALL_TEST_GROUPS.incomplete
     elseif type(name) == "string" then
         return name
     else
