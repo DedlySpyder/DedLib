@@ -68,9 +68,10 @@ function Tester._report_failed()
     Logger:info("")
     Logger:info("Finished running tests:")
 
-    local succeededCount = (Tester._EXTERNAL_RESULTS["succeeded"] or 0) + TestGroup._all_counts["succeeded"]
-    local skippedCount = (Tester._EXTERNAL_RESULTS["skipped"] or 0) + TestGroup._all_counts["skipped"]
-    local failedCount = (Tester._EXTERNAL_RESULTS["failed"] or 0) + TestGroup._all_counts["failed"]
+    local allCounts = TestGroup.get_all_group_counts()
+    local succeededCount = (Tester._EXTERNAL_RESULTS["succeeded"] or 0) + allCounts["succeeded"]
+    local skippedCount = (Tester._EXTERNAL_RESULTS["skipped"] or 0) + allCounts["skipped"]
+    local failedCount = (Tester._EXTERNAL_RESULTS["failed"] or 0) + allCounts["failed"]
 
     Logger:info("    %d succeeded", succeededCount)
     if skippedCount > 0 then
@@ -83,11 +84,11 @@ function Tester._report_failed()
         Logger:info("Enable debug logging for more information.")
     end
 
-    for _, group in ipairs(TestGroup._all_groups["skipped"]) do
+    for _, group in ipairs(TestGroup.get_all_groups()["skipped"]) do
         group:print_to_logger()
     end
 
-    for _, group in ipairs(TestGroup._all_groups["completed"]) do
+    for _, group in ipairs(TestGroup.get_all_groups()["completed"]) do
         group:print_to_logger()
     end
 end

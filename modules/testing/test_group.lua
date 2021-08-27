@@ -4,23 +4,23 @@ local Util = require("__DedLib__/modules/util")
 
 local Test = require("__DedLib__/modules/testing/test")
 
-local TestGroup = {}
-TestGroup.__index = TestGroup
-TestGroup.__which = "TestGroup"
-
-Test.name = "uninitialized_test_group"
-
-TestGroup._all_groups = {
+local ALL_TEST_GROUPS = {
     incomplete = {},
     skipped = {},
     completed = {}
 }
 
-TestGroup._all_counts = {
+local ALL_TEST_GROUP_COUNTS = {
     skipped = 0,
     failed = 0,
     succeeded = 0
 }
+
+local TestGroup = {}
+TestGroup.__index = TestGroup
+TestGroup.__which = "TestGroup"
+
+Test.name = "uninitialized_test_group"
 
 TestGroup.tests = {
     incomplete = {}, -- Both pending and running
@@ -69,15 +69,23 @@ function TestGroup.create(args)
     tg.tests.incomplete = tests
 
     tg:validate()
-    table.insert(TestGroup._all_groups.incomplete, tg)
+    table.insert(ALL_TEST_GROUPS.incomplete, tg)
     return tg
+end
+
+function TestGroup.get_all_groups()
+    return ALL_TEST_GROUPS
+end
+
+function TestGroup.get_all_group_counts()
+    return ALL_TEST_GROUP_COUNTS
 end
 
 
 -- Init functions
 function TestGroup.generate_name(name)
     if name == nil then
-        return "Unnamed Tester #" .. #TestGroup._all_groups.incomplete
+        return "Unnamed Tester #" .. #ALL_TEST_GROUPS.incomplete
     elseif type(name) == "string" then
         return name
     else
@@ -146,8 +154,8 @@ end
 
 function TestGroup.run_all()
     Logger:trace("Running all tests")
-    local allGroups = TestGroup._all_groups
-    local allCounts = TestGroup._all_counts
+    local allGroups = ALL_TEST_GROUPS
+    local allCounts = ALL_TEST_GROUP_COUNTS
     for _, group in ipairs(allGroups.incomplete) do
         group:run()
 
