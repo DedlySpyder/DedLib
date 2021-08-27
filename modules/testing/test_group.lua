@@ -8,6 +8,8 @@ local TestGroup = {}
 TestGroup.__index = TestGroup
 TestGroup.__which = "TestGroup"
 
+Test.name = "uninitialized_test_group"
+
 TestGroup._all_groups = {
     incomplete = {},
     skipped = {},
@@ -38,7 +40,16 @@ TestGroup.state = "pending"
 TestGroup.skipped_reason = "Unknown error"
 
 function TestGroup.create(args)
-    if #args > 0 then args = {tests = args} end
+    local argsType = type(args)
+    if argsType == "table" then
+        if args.tests == nil and table_size(args) > 0 then
+            Logger:debug('Args for test group are missing "tests", but is a table, assuming this is just a single test instead...')
+            args = {tests = {args}}
+        end
+    else
+        Logger:fatal("Failed to create test group with: %s", args)
+        error("Failed to create test group of type " .. argsType .. " (expected table)")
+    end
     Logger:trace("Creating test group with args %s", args)
 
     -- This deepcopy will implicitly add all test group properties
@@ -66,7 +77,7 @@ end
 -- Init functions
 function TestGroup.generate_name(name)
     if name == nil then
-        return "Unnamed Tester #" .. #TestGroup._all_groups
+        return "Unnamed Tester #" .. #TestGroup._all_groups.incomplete
     elseif type(name) == "string" then
         return name
     else
@@ -74,24 +85,24 @@ function TestGroup.generate_name(name)
     end
 end
 
-function TestGroup:validate_property(prop, expectedType, forceToList) -- TODO - abstract - shared code with Test.lua, but I like the logger right now
+function TestGroup:validate_property(prop, expectedType) -- TODO - abstract - shared code with Test.lua, but I like the logger right now
     local p = rawget(self, prop)
     if p ~= nil then
-        if type(p) ~= expectedType then
+        local pType = type(p)
+        if pType ~= expectedType then
             Logger:fatal("Validation for test group failed: %s", self)
             error("Test group " .. self.name .. " failed validation for " .. prop .. ", see logs for more details")
-        elseif forceToList then
+        elseif expectedType == "table" and #p == 0 and table_size(p) > 0 then
             self[prop] = {p}
         end
-
     end
 end
 
 function TestGroup:validate()
     self:validate_property("before", "function")
-    self:validate_property("beforeArgs", "table", true)
+    self:validate_property("beforeArgs", "table")
     self:validate_property("after", "function")
-    self:validate_property("afterArgs", "table", true)
+    self:validate_property("afterArgs", "table")
 end
 
 
