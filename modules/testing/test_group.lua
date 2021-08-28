@@ -160,22 +160,29 @@ end
 function TestGroup.run_all()
     Logger:trace("Running all tests")
     local allGroups = ALL_TEST_GROUPS
-    local allCounts = ALL_TEST_GROUP_COUNTS
     for _, group in ipairs(allGroups.incomplete) do
         group:run()
-
-        local state = group.state
-        if state == "completed" then
-            table.insert(allGroups.completed, group)
-        elseif state == "skipped" then
-            table.insert(allGroups.skipped, group)
-        end
-
-        allCounts.skipped = allCounts.skipped + #group.tests.skipped
-        allCounts.failed = allCounts.failed + #group.tests.failed
-        allCounts.succeeded = allCounts.succeeded + #group.tests.succeeded
     end
     allGroups.incomplete = {}
+end
+
+-- NOTE: Doesn't remove from incomplete at this time
+function TestGroup:adjust_globals()
+    local allGroups = ALL_TEST_GROUPS
+    local allCounts = ALL_TEST_GROUP_COUNTS
+
+    local state = self.state
+    if state == "completed" then
+        table.insert(allGroups.completed, self)
+    elseif state == "skipped" then
+        table.insert(allGroups.skipped, self)
+    end
+
+    if self.done then
+        allCounts.skipped = allCounts.skipped + #self.tests.skipped
+        allCounts.failed = allCounts.failed + #self.tests.failed
+        allCounts.succeeded = allCounts.succeeded + #self.tests.succeeded
+    end
 end
 
 function TestGroup:run()
@@ -199,6 +206,7 @@ function TestGroup:run()
         tests.incomplete = {}
         self:run_after()
         self:set_completed()
+        self:adjust_globals()
 
     elseif self.state == "pending" then
         -- After this is done, the state of the test will either be "skipped" or "running"
