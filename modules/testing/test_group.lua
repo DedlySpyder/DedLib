@@ -10,7 +10,7 @@ local TestGroup = {}
 TestGroup.__index = TestGroup
 TestGroup.__which = "TestGroup"
 
-Test.name = "uninitialized_test_group"
+TestGroup.name = "uninitialized_test_group"
 
 TestGroup.tests = {
     incomplete = {}, -- Both pending and running
@@ -46,7 +46,7 @@ function TestGroup.create(args)
     local tg = table.deepcopy(args)
     setmetatable(tg, TestGroup)
 
-    local groupName = TestGroup.generate_name(tg.name)
+    local groupName = TestGroup.generate_name(args.name)
     Logger:info("Creating test group named %s", groupName)
     tg.name = groupName
 
