@@ -1,6 +1,6 @@
 local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib"}
 
-local TestGroup = require("__DedLib__/modules/testing/test_group")
+local Test_Group = require("__DedLib__/modules/testing/test_group")
 
 local Tester = {}
 
@@ -45,7 +45,7 @@ end
 function Tester.add_tests(tests, testerData) -- TODO - deprecate?
     if type(testerData) ~= "table" then testerData = {name = testerData} end -- Assume non-table is just a name
     testerData.tests = tests
-    TestGroup.create(testerData)
+    Test_Group.create(testerData)
 end
 
 
@@ -60,7 +60,7 @@ end
 
 
 function Tester.run()
-    TestGroup.run_all()
+    Test_Group.run_all()
     Tester._report_failed()
 end
 
@@ -68,7 +68,7 @@ function Tester._report_failed()
     Logger:info("")
     Logger:info("Finished running tests:")
 
-    local allCounts = TestGroup.get_all_group_counts()
+    local allCounts = Test_Group.get_all_group_counts()
     local succeededCount = (Tester._EXTERNAL_RESULTS["succeeded"] or 0) + allCounts["succeeded"]
     local skippedCount = (Tester._EXTERNAL_RESULTS["skipped"] or 0) + allCounts["skipped"]
     local failedCount = (Tester._EXTERNAL_RESULTS["failed"] or 0) + allCounts["failed"]
@@ -84,11 +84,11 @@ function Tester._report_failed()
         Logger:info("Enable debug logging for more information.")
     end
 
-    for _, group in ipairs(TestGroup.get_all_groups()["skipped"]) do
+    for _, group in ipairs(Test_Group.get_all_groups()["skipped"]) do
         group:print_to_logger()
     end
 
-    for _, group in ipairs(TestGroup.get_all_groups()["completed"]) do
+    for _, group in ipairs(Test_Group.get_all_groups()["completed"]) do
         group:print_to_logger()
     end
 end

@@ -6,30 +6,30 @@ local Test = require("__DedLib__/modules/testing/test")
 
 local ALL_TEST_GROUPS, ALL_TEST_GROUP_COUNTS
 
-local TestGroup = {}
-TestGroup.__index = TestGroup
-TestGroup.__which = "TestGroup"
+local Test_Group = {}
+Test_Group.__index = Test_Group
+Test_Group.__which = "TestGroup"
 
-TestGroup.name = "uninitialized_test_group"
+Test_Group.name = "uninitialized_test_group"
 
-TestGroup.tests = {
+Test_Group.tests = {
     incomplete = {}, -- Both pending and running
     skipped = {},
     failed = {},
     succeeded = {}
 }
 
-TestGroup.before = false
-TestGroup.beforeArgs = {}
-TestGroup.after = false
-TestGroup.afterArgs = {}
+Test_Group.before = false
+Test_Group.beforeArgs = {}
+Test_Group.after = false
+Test_Group.afterArgs = {}
 
-TestGroup.running = false
-TestGroup.done = false
-TestGroup.state = "pending"
-TestGroup.skipped_reason = "Unknown error"
+Test_Group.running = false
+Test_Group.done = false
+Test_Group.state = "pending"
+Test_Group.skipped_reason = "Unknown error"
 
-function TestGroup.create(args)
+function Test_Group.create(args)
     local argsType = type(args)
     if argsType == "table" then
         if args.tests == nil and table_size(args) > 0 then
@@ -44,9 +44,9 @@ function TestGroup.create(args)
 
     -- This deepcopy will implicitly add all test group properties
     local tg = table.deepcopy(args)
-    setmetatable(tg, TestGroup)
+    setmetatable(tg, Test_Group)
 
-    local groupName = TestGroup.generate_name(args.name)
+    local groupName = Test_Group.generate_name(args.name)
     Logger:info("Creating test group named %s", groupName)
     tg.name = groupName
 
@@ -55,7 +55,7 @@ function TestGroup.create(args)
         Logger:warn('No tests for %s found. Did the test function names contain the word "test"?', groupName)
     end
 
-    tg.tests = table.deepcopy(TestGroup.tests)
+    tg.tests = table.deepcopy(Test_Group.tests)
     tg.tests.incomplete = tests
 
     tg:validate()
@@ -63,15 +63,15 @@ function TestGroup.create(args)
     return tg
 end
 
-function TestGroup.get_all_groups()
+function Test_Group.get_all_groups()
     return ALL_TEST_GROUPS
 end
 
-function TestGroup.get_all_group_counts()
+function Test_Group.get_all_group_counts()
     return ALL_TEST_GROUP_COUNTS
 end
 
-function TestGroup.reset_all_groups()
+function Test_Group.reset_all_groups()
     ALL_TEST_GROUPS = {
         incomplete = {},
         skipped = {},
@@ -84,11 +84,11 @@ function TestGroup.reset_all_groups()
         succeeded = 0
     }
 end
-TestGroup.reset_all_groups()
+Test_Group.reset_all_groups()
 
 
 -- Init functions
-function TestGroup.generate_name(name)
+function Test_Group.generate_name(name)
     if name == nil then
         return "Unnamed Test Group #" .. #ALL_TEST_GROUPS.incomplete
     elseif type(name) == "string" then
@@ -98,7 +98,7 @@ function TestGroup.generate_name(name)
     end
 end
 
-function TestGroup:validate_property(prop, expectedType) -- TODO - abstract - shared code with Test.lua, but I like the logger right now
+function Test_Group:validate_property(prop, expectedType) -- TODO - abstract - shared code with Test.lua, but I like the logger right now
     local p = rawget(self, prop)
     if p ~= nil then
         local pType = type(p)
@@ -111,7 +111,7 @@ function TestGroup:validate_property(prop, expectedType) -- TODO - abstract - sh
     end
 end
 
-function TestGroup:validate()
+function Test_Group:validate()
     self:validate_property("before", "function")
     self:validate_property("beforeArgs", "table")
     self:validate_property("after", "function")
@@ -120,7 +120,7 @@ end
 
 
 -- Runtime functions
-function TestGroup:run_before()
+function Test_Group:run_before()
     if self.before then
         Logger:debug("Running before function for test group %s", self.name)
         local s, e = pcall(self.before, table.unpack(self.beforeArgs))
@@ -140,7 +140,7 @@ function TestGroup:run_before()
     self:set_running()
 end
 
-function TestGroup:run_after()
+function Test_Group:run_after()
     if self.after then
         Logger:debug("Running after function for test group %s", self.name)
         local s, e = pcall(self.after, table.unpack(self.afterArgs))
@@ -157,7 +157,7 @@ function TestGroup:run_after()
     end
 end
 
-function TestGroup.run_all()
+function Test_Group.run_all()
     Logger:trace("Running all tests")
     local allGroups = ALL_TEST_GROUPS
     for _, group in ipairs(allGroups.incomplete) do
@@ -167,7 +167,7 @@ function TestGroup.run_all()
 end
 
 -- NOTE: Doesn't remove from incomplete at this time
-function TestGroup:adjust_globals()
+function Test_Group:adjust_globals()
     local allGroups = ALL_TEST_GROUPS
     local allCounts = ALL_TEST_GROUP_COUNTS
 
@@ -185,7 +185,7 @@ function TestGroup:adjust_globals()
     end
 end
 
-function TestGroup:run()
+function Test_Group:run()
     if self.done then return end
 
     if self.state == "running" then
@@ -220,7 +220,7 @@ function TestGroup:run()
     end
 end
 
-function TestGroup:skip_tests()
+function Test_Group:skip_tests()
     local tests = self.tests
     local reason = self.skipped_reason
     for _, test in ipairs(tests.incomplete) do
@@ -231,19 +231,19 @@ function TestGroup:skip_tests()
     tests.incomplete = {}
 end
 
-function TestGroup:set_running()
+function Test_Group:set_running()
     self.state = "running"
     self.running = true
 end
 
-function TestGroup:set_skipped(reason)
+function Test_Group:set_skipped(reason)
     self.state = "skipped"
     self.running = false
     self.done = true
     self.skipped_reason = reason
 end
 
-function TestGroup:set_completed()
+function Test_Group:set_completed()
     self.state = "completed"
     self.running = false
     self.done = true
@@ -251,7 +251,7 @@ end
 
 
 -- Print functions
-function TestGroup:print_to_logger()
+function Test_Group:print_to_logger()
     if self.state == "skipped" then
         Logger:info("%d skipped tests for test group %s, due to %s", #self.tests.skipped, self.name, self.skipped_reason)
 
@@ -283,4 +283,4 @@ end
 
 
 
-return TestGroup
+return Test_Group
