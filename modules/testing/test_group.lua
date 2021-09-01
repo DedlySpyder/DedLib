@@ -8,7 +8,7 @@ local ALL_TEST_GROUPS, ALL_TEST_GROUP_COUNTS
 
 local Test_Group = {}
 Test_Group.__index = Test_Group
-Test_Group.__which = "TestGroup"
+Test_Group.__which = "Test_Group"
 
 Test_Group.name = "uninitialized_test_group"
 
