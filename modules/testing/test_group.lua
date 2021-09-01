@@ -32,7 +32,10 @@ Test_Group.skipped_reason = "Unknown error"
 function Test_Group.create(args)
     local argsType = type(args)
     if argsType == "table" then
-        if args.tests == nil and table_size(args) > 0 then
+        if args.__which == Test_Group.__which then
+            -- No-op
+            return args
+        elseif args.tests == nil and table_size(args) > 0 then
             Logger:debug('Args for test group are missing "tests", but is a table, assuming this is just a single test instead...')
             args = {tests = {args}}
         end
