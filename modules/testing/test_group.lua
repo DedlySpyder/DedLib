@@ -4,11 +4,11 @@ local Util = require("__DedLib__/modules/util")
 
 local Test = require("__DedLib__/modules/testing/test")
 
-local ALL_TEST_GROUPS, ALL_TEST_GROUP_COUNTS
-
 local Test_Group = {}
 Test_Group.__index = Test_Group
 Test_Group.__which = "Test_Group"
+
+Test_Group.__UNNAMED_COUNT = 0
 
 Test_Group.name = "uninitialized_test_group"
 
@@ -62,38 +62,16 @@ function Test_Group.create(args)
     tg.tests.incomplete = tests
 
     tg:validate()
-    table.insert(ALL_TEST_GROUPS.incomplete, tg)
     return tg
 end
-
-function Test_Group.get_all_groups()
-    return ALL_TEST_GROUPS
-end
-
-function Test_Group.get_all_group_counts()
-    return ALL_TEST_GROUP_COUNTS
-end
-
-function Test_Group.reset_all_groups()
-    ALL_TEST_GROUPS = {
-        incomplete = {},
-        skipped = {},
-        completed = {}
-    }
-
-    ALL_TEST_GROUP_COUNTS = {
-        skipped = 0,
-        failed = 0,
-        succeeded = 0
-    }
-end
-Test_Group.reset_all_groups()
 
 
 -- Init functions
 function Test_Group.generate_name(name)
     if name == nil then
-        return "Unnamed Test Group #" .. #ALL_TEST_GROUPS.incomplete
+        local name = "Unnamed Test Group #" .. Test_Group.__UNNAMED_COUNT
+        Test_Group.__UNNAMED_COUNT = Test_Group.__UNNAMED_COUNT + 1
+        return name
     elseif type(name) == "string" then
         return name
     else
@@ -160,34 +138,6 @@ function Test_Group:run_after()
     end
 end
 
-function Test_Group.run_all()
-    Logger:trace("Running all tests")
-    local allGroups = ALL_TEST_GROUPS
-    for _, group in ipairs(allGroups.incomplete) do
-        group:run()
-    end
-    allGroups.incomplete = {}
-end
-
--- NOTE: Doesn't remove from incomplete at this time
-function Test_Group:adjust_globals()
-    local allGroups = ALL_TEST_GROUPS
-    local allCounts = ALL_TEST_GROUP_COUNTS
-
-    local state = self.state
-    if state == "completed" then
-        table.insert(allGroups.completed, self)
-    elseif state == "skipped" then
-        table.insert(allGroups.skipped, self)
-    end
-
-    if self.done then
-        allCounts.skipped = allCounts.skipped + #self.tests.skipped
-        allCounts.failed = allCounts.failed + #self.tests.failed
-        allCounts.succeeded = allCounts.succeeded + #self.tests.succeeded
-    end
-end
-
 function Test_Group:run()
     if self.done then return end
 
@@ -209,7 +159,6 @@ function Test_Group:run()
         tests.incomplete = {}
         self:run_after()
         self:set_completed()
-        self:adjust_globals()
 
     elseif self.state == "pending" then
         -- After this is done, the state of the test will either be "skipped" or "running"
