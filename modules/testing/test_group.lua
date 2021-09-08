@@ -35,9 +35,19 @@ function Test_Group.create(args)
         if args.__which == Test_Group.__which then
             -- No-op
             return args
-        elseif args.tests == nil and table_size(args) > 0 then
-            Logger:debug('Args for test group are missing "tests", but is a table, assuming this is just a single test instead...')
-            args = {tests = {args}}
+        elseif args.tests == nil or table_size(args.tests) == 0 then
+            Logger:debug('Args for test group are missing "tests" property, attempting to find test functions at root level of group instead...')
+            local tests = {}
+            local count = 0
+            for name, value in pairs(args) do
+                if Test.valid_name(name) and name ~= "tests" then
+                    Logger:trace("Found test: %s", name)
+                    tests[name] = value
+                    count = count + 1
+                end
+            end
+            Logger:debug("Found %s tests at root level of test group", count)
+            args.tests = tests
         end
     else
         Logger:fatal("Failed to create test group with: %s", args)
