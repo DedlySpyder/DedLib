@@ -75,6 +75,10 @@ function Test_Group.create(args)
     return tg
 end
 
+function Test_Group:add_test(test, name)
+    table.insert(self.tests.incomplete, Test.create(test, name))
+end
+
 
 -- Init functions
 function Test_Group.generate_name(name)
