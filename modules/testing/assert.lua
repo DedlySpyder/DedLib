@@ -10,7 +10,7 @@ This module can be called directly or used from the main `__DedLib__/modules/tes
 local Util = require("__DedLib__/modules/util")
 local Stringify = require("__DedLib__/modules/stringify")
 
-local Assert = {}
+local Assert = {} -- TODO - abstract out basic equal comparisons???
 
 
 function Assert._fail(message, assertType, assertVar1Name, assertVar1Value, assertVar2Name, assertVar2Value)

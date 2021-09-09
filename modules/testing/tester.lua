@@ -1,6 +1,6 @@
 local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib"}
 
-local Test_Group = require("__DedLib__/modules/testing/test_group")
+local Test_Runner = require("__DedLib__/modules/testing/test_runner")
 
 local Tester = {}
 
@@ -29,28 +29,23 @@ couldn't do the validations (like your entity doesn't exist or something), then 
 ]]--
 
 -- Expects: {succeeded = integer, skipped = integer, failed = integer}
-function Tester.add_external_results(results)
+function Tester.add_external_results(results) -- TODO - move to Test_Runner
     Tester._EXTERNAL_RESULTS = results
 end
 
 function Tester.add_test(data, name)
-    if not name then name = "Single Test #" .. #Tester._TESTERS end
-    if not string.find(string.lower(name), "test") then
-        name = name .. " Test"
-    end
-    Logger:debug("Adding single test %s", name)
-    return Tester.add_tests({[name] = data}, name .. " Tester")
+    Test_Runner.add_test(data, name)
 end
 
 function Tester.add_tests(tests, testerData) -- TODO - deprecate?
     if type(testerData) ~= "table" then testerData = {name = testerData} end -- Assume non-table is just a name
     testerData.tests = tests
-    Test_Group.create(testerData)
+    Test_Runner.add_test_group(testerData)
 end
 
 
 
-function Tester.create_basic_test(testingFunc, expectedValue, ...)
+function Tester.create_basic_test(testingFunc, expectedValue, ...) -- TODO - put this under Test? or just don't have it because it complicates the stacktrace? I think that last one
     local testArgs = table.pack(...)
     return function()
         local actual = testingFunc(unpack(testArgs))
@@ -60,15 +55,15 @@ end
 
 
 function Tester.run()
-    Test_Group.run_all()
+    Test_Runner.run()
     Tester._report_failed()
 end
 
-function Tester._report_failed()
+function Tester._report_failed() -- TODO - move to Test_Runner
     Logger:info("")
     Logger:info("Finished running tests:")
 
-    local allCounts = Test_Group.get_all_group_counts()
+    local allCounts = Test_Runner.ALL_TEST_GROUPS_COUNTS
     local succeededCount = (Tester._EXTERNAL_RESULTS["succeeded"] or 0) + allCounts["succeeded"]
     local skippedCount = (Tester._EXTERNAL_RESULTS["skipped"] or 0) + allCounts["skipped"]
     local failedCount = (Tester._EXTERNAL_RESULTS["failed"] or 0) + allCounts["failed"]
@@ -84,11 +79,12 @@ function Tester._report_failed()
         Logger:info("Enable debug logging for more information.")
     end
 
-    for _, group in ipairs(Test_Group.get_all_groups()["skipped"]) do
+    local allTestGroups = Test_Runner.ALL_TEST_GROUPS
+    for _, group in ipairs(allTestGroups["skipped"]) do
         group:print_to_logger()
     end
 
-    for _, group in ipairs(Test_Group.get_all_groups()["completed"]) do
+    for _, group in ipairs(allTestGroups["completed"]) do
         group:print_to_logger()
     end
 end
