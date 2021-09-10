@@ -260,6 +260,7 @@ end
 
 -- Print functions
 function Test:print_to_logger()
+    local state = self.state
     if state == "succeeded" then
         Logger:info("%s <%s> succeeded", self.name, self.test_location)
 

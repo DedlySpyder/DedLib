@@ -236,7 +236,7 @@ function Test_Group:print_to_logger()
         local failedTests = self.tests.failed
         if #failedTests > 0 then
             Logger:info("%d failed tests for test group %s", #failedTests, self.name)
-            for _, test in ipairs(self.tests.skipped) do
+            for _, test in ipairs(self.tests.failed) do
                 Logger:info("")
                 test:print_to_logger()
             end
