@@ -2,7 +2,9 @@
 Version: 0.0.3
 Date: 2021.08.00
   Breaking Changes:
-    - Tester - Adding tests now validates the extra properties (such as testing if before/after are functions if they exist), a fatal error occurs if these validations fail
+    - Tester - Major internal refactor, most external use moved to Test_Runner (Assert/Mock now need to be required on their own)
+    - Tester/Test_Runner - Removed create_basic_test, it masked any useful stacktrace on a failed test
+    - Tester/Test_Runner - Adding tests now validates the extra properties (such as testing if before/after are functions if they exist), a fatal error occurs if these validations fail
   Changes:
     - Debug - Switched to a more performant getinfo call
     - Stringify - Simplified no-op to_string calls when trying to stringify a string (less checks before returning it)

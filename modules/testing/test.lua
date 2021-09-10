@@ -28,6 +28,10 @@ Test.state = "pending"
 Test.error = "Unknown error"
 Test.stacktrace = nil
 
+--[[
+if error from the test has {message = message, stacktrace = debug.traceback()}
+then the message will always be printed on an error, but the stacktrace will be saved for debug mode
+]]--
 function Test.create(args, name)
     local argsType = type(args)
     if argsType == "function" then

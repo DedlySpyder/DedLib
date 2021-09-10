@@ -1,11 +1,9 @@
 --[[
-The assert library is better for use with the Tester compared to assert or error manually because it will include the
+The assert library is better for use with the Test_Runner compared to assert or error manually because it will include the
 stacktrace in the resulting error output. There are also convenience methods comparisons as well.
 
 Methods ending in `*_exactly` will compare tables to see if they are the same reference to a table, otherwise simply the
 value of the table is compared.
-
-This module can be called directly or used from the main `__DedLib__/modules/testing/tester` file as `Tester.Assert...`
 ]]--
 local Util = require("__DedLib__/modules/util")
 local Stringify = require("__DedLib__/modules/stringify")
