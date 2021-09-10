@@ -86,5 +86,47 @@ function Test_Runner.adjust_group(group)
     end
 end
 
+function Test_Runner.print_pretty_report()
+    Logger:info("")
+    Logger:info("Finished running tests:")
+
+    local allCounts = Test_Runner.ALL_TEST_GROUPS_COUNTS
+
+    local externalSucceededCount = Test_Runner.EXTERNAL_RESULT_COUNTS["succeeded"]
+    local externalSkippedCount = Test_Runner.EXTERNAL_RESULT_COUNTS["skipped"]
+    local externalFailedCount = Test_Runner.EXTERNAL_RESULT_COUNTS["failed"]
+
+    local succeededCount = externalSucceededCount + allCounts["succeeded"]
+    local skippedCount = externalSkippedCount + allCounts["skipped"]
+    local failedCount = externalFailedCount + allCounts["failed"]
+
+    Logger:info("    %d succeeded", succeededCount)
+    if skippedCount > 0 then
+        Logger:info("    %d skipped", skippedCount)
+    end
+    Logger:info("    %d failed", failedCount)
+
+    if externalSucceededCount > 0 or externalSkippedCount > 0 or externalFailedCount > 0 then
+        Logger:info("      External source counts (included in above counts):")
+        Logger:info("        %d from external sources", externalSucceededCount)
+        Logger:info("        %d from external sources", externalSkippedCount)
+        Logger:info("        %d from external sources", externalFailedCount)
+    end
+
+    if not Logger:will_print_for_level("debug") then
+        Logger:info("")
+        Logger:info("Enable debug logging for more information.")
+    end
+
+    local allTestGroups = Test_Runner.ALL_TEST_GROUPS
+    for _, group in ipairs(allTestGroups["skipped"]) do
+        group:print_to_logger()
+    end
+
+    for _, group in ipairs(allTestGroups["completed"]) do
+        group:print_to_logger()
+    end
+end
+
 
 return Test_Runner
