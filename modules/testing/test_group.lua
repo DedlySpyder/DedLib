@@ -76,7 +76,13 @@ function Test_Group.create(args)
 end
 
 function Test_Group:add_test(test, name)
-    table.insert(self.tests.incomplete, Test.create(test, name))
+    local testObj = Test.create(test, name)
+    Logger:debug("Adding new test %s to test group %s", testObj.name, self.name)
+    local oldTest = self.tests.incomplete[testObj.name]
+    if oldTest then
+        Logger:warn("Test %s already exists in test group, overwriting. Old test: %s", testObj.name, oldTest)
+    end
+    self.tests.incomplete[testObj.name] = testObj
 end
 
 
@@ -158,19 +164,22 @@ function Test_Group:run()
     if self.state == "running" then
         Logger:debug("Running test group %s", self.name)
         local tests = self.tests
-        for _, test in ipairs(tests.incomplete) do
+        local stillRunning = 0
+        for testName, test in pairs(tests.incomplete) do
             test:run()
 
             local state = test.state
             if state == "succeeded" then
                 table.insert(tests.succeeded, test)
+                tests.incomplete[testName] = nil
             elseif state == "skipped" then
                 table.insert(tests.skipped, test)
+                tests.incomplete[testName] = nil
             elseif state == "failed" then
                 table.insert(tests.failed, test)
+                tests.incomplete[testName] = nil
             end
         end
-        tests.incomplete = {}
         self:run_after()
         self:set_completed()
 
@@ -189,8 +198,8 @@ end
 function Test_Group:skip_tests()
     local tests = self.tests
     local reason = self.skipped_reason
-    for _, test in ipairs(tests.incomplete) do
-        Logger:info("Test %s skipped", test.name)
+    for testName, test in pairs(tests.incomplete) do
+        Logger:info("Test %s skipped", testName)
         test:set_skipped(reason, "Test group skipped, before function failed: ")
         table.insert(tests.skipped, test)
     end

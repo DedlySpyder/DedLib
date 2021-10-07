@@ -78,7 +78,8 @@ function Test.create_multiple(testsArgs)
     local tests = {}
     for name, args in pairs(testsArgs) do
         if Test.valid_name(name) then
-            table.insert(tests, Test.create(args, name))
+            local test = Test.create(args, name)
+            tests[test.name] = test
         else
             Logger:debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
         end
