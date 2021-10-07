@@ -8,7 +8,6 @@ Date: 2021.08.00
   Changes:
     - Debug - Switched to a more performant getinfo call
     - Stringify - Simplified no-op to_string calls when trying to stringify a string (less checks before returning it)
-    - Tester - Almost full rewrite of the tester underlying code
     - Tester - Logs individual test group's successes during end report
     - Testing/Assert - Added throws error asserts
 ---------------------------------------------------------------------------------------------------
