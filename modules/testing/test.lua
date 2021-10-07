@@ -79,6 +79,10 @@ function Test.create_multiple(testsArgs)
     for name, args in pairs(testsArgs) do
         if Test.valid_name(name) then
             local test = Test.create(args, name)
+            local oldTest = tests[test.name]
+            if oldTest ~= nil then
+                Logger:warn("Test %s already exists in create group, overwriting. Old test: %s", test.name, oldTest)
+            end
             tests[test.name] = test
         else
             Logger:debug("Ignoring function " .. name .. ', does not contain the string "test" in name')
