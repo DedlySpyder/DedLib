@@ -13,7 +13,9 @@ Test_Group.__UNNAMED_COUNT = 0
 Test_Group.name = "uninitialized_test_group"
 
 Test_Group.tests = {
+    -- Map of test name -> Test
     incomplete = {}, -- Both pending and running
+    -- Lists
     skipped = {},
     failed = {},
     succeeded = {}
@@ -171,12 +173,13 @@ function Test_Group:run()
             local state = test.state
             if state == "succeeded" then
                 table.insert(tests.succeeded, test)
-                tests.incomplete[testName] = nil
             elseif state == "skipped" then
                 table.insert(tests.skipped, test)
-                tests.incomplete[testName] = nil
             elseif state == "failed" then
                 table.insert(tests.failed, test)
+            end
+
+            if test.done then
                 tests.incomplete[testName] = nil
             end
         end
