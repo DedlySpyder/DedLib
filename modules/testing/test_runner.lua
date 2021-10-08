@@ -20,8 +20,17 @@ function Test_Runner.add_test_group(testGroup)
     if not (type(testGroup) == "table" and testGroup.__which == "Test_Group") then
         testGroup = Test_Group.create(testGroup)
     end
+
+    local oldGroup = Test_Runner.ALL_TEST_GROUPS.incomplete[testGroup.name]
+    if oldGroup then
+        Logger:warn(
+                "Test Group %s already exists in test runner, overwriting. Old test group: %s",
+                testGroup.name,
+                oldGroup
+        )
+    end
     Logger:trace("Adding test group: %s", testGroup)
-    table.insert(Test_Runner.ALL_TEST_GROUPS.incomplete, testGroup)
+    Test_Runner.ALL_TEST_GROUPS.incomplete[testGroup.name] = testGroup
 end
 
 function Test_Runner.add_external_results(resultCounts)
@@ -38,7 +47,9 @@ end
 function Test_Runner.reset()
     Logger:trace("Resetting test groups")
     Test_Runner.ALL_TEST_GROUPS = {
+        -- Map of test name -> Test
         incomplete = {},
+        -- Lists
         skipped = {},
         completed = {}
     }
@@ -57,18 +68,17 @@ function Test_Runner.reset()
 end
 Test_Runner.reset()
 
+-- TODO - add on_tick that will repeat run as long as it needs to
+
 function Test_Runner.run()
     Logger:trace("Running all test groups")
     local allGroups = Test_Runner.ALL_TEST_GROUPS
-    for _, group in ipairs(allGroups.incomplete) do
+    for _, group in pairs(allGroups.incomplete) do
         group:run()
         Test_Runner.adjust_group(group)
     end
-    allGroups.incomplete = {}
 end
 
--- Relies on .run() to remove from incomplete
--- This is fine with the current logic
 function Test_Runner.adjust_group(group)
     local allGroups = Test_Runner.ALL_TEST_GROUPS
     local allCounts = Test_Runner.ALL_TEST_GROUPS_COUNTS
@@ -83,6 +93,7 @@ function Test_Runner.adjust_group(group)
         allCounts.skipped = allCounts.skipped + #tests.skipped
         allCounts.failed = allCounts.failed + #tests.failed
         allCounts.succeeded = allCounts.succeeded + #tests.succeeded
+        allGroups.incomplete[group.name] = nil
     end
 end
 
