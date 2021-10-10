@@ -5,6 +5,8 @@ local Test_Group = require("__DedLib__/modules/testing/test_group")
 local Test_Runner = {}
 Test_Runner.__which = "Test_Runner"
 
+Test_Runner.done = false
+
 Test_Runner.ALL_TEST_GROUPS = {}
 Test_Runner.ALL_TEST_GROUPS_COUNTS = {}
 Test_Runner.EXTERNAL_RESULT_COUNTS = {}
@@ -65,18 +67,36 @@ function Test_Runner.reset()
         failed = 0,
         succeeded = 0
     }
+    Test_Runner.done = false
 end
 Test_Runner.reset()
 
--- TODO - add on_tick that will repeat run as long as it needs to
+function Test_Runner.on_tick()
+    if not Test_Runner.done then
+        local runningCount = Test_Runner.run()
+        if runningCount > 0 then
+            Logger:info("Tick completed, still %s test groups in progress", runningCount)
+        else
+            Logger:info("Tick completed, no more test groups to run")
+            Test_Runner.print_pretty_report()
+            Test_Runner.done = true
+        end
+    end
+end
 
 function Test_Runner.run()
     Logger:trace("Running all test groups")
     local allGroups = Test_Runner.ALL_TEST_GROUPS
+    local stillRunning = 0
     for _, group in pairs(allGroups.incomplete) do
         group:run()
         Test_Runner.adjust_group(group)
+
+        if not group.done then
+            stillRunning = stillRunning + 1
+        end
     end
+    return stillRunning
 end
 
 function Test_Runner.adjust_group(group)
