@@ -181,10 +181,19 @@ function Test_Group:run()
 
             if test.done then
                 tests.incomplete[testName] = nil
+            else
+                stillRunning = stillRunning + 1
             end
         end
-        self:run_after()
-        self:set_completed()
+
+        if stillRunning == 0 then
+            Logger:debug("Test group %s completed all tests", self.name)
+            self:run_after()
+            self:set_completed()
+        else
+            Logger:debug("Test group %s still has %d running tests", self.name, stillRunning)
+        end
+        return stillRunning
 
     elseif self.state == "pending" then
         -- After this is done, the state of the test will either be "skipped" or "running"
