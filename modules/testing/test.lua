@@ -197,8 +197,14 @@ function Test:run()
         Logger:debug("Running test %s", self.name)
         local s, e = pcall(self.func, table.unpack(self.args))
         if s then
-            Logger:info("Test %s succeeded", self.name)
-            self:set_succeeded()
+            -- If the test func returns false, then it is still not completed
+            if e ~= false then
+                Logger:info("Test %s succeeded", self.name)
+                self:set_succeeded()
+            else
+                Logger:info("Test %s did not complete", self.name)
+                return
+            end
         else
             Logger:error("Test %s failed, raw error: %s", self.name, e)
             self:set_failed(e)
