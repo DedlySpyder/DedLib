@@ -11,6 +11,14 @@ data:extend({
 
 	-- Runtime settings
 	{
+		name = "DedLib_tester_game_speed",
+		type = "double-setting",
+		setting_type = "runtime-global",
+		default_value = 5,
+		minimum_value = 0.01,
+		order = "800"
+	},
+	{
 		name = "DedLib_logger_level_console",
 		type = "string-setting",
 		setting_type = "runtime-global",

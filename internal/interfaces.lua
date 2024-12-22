@@ -1,0 +1,7 @@
+--local Logger_Internal = require("logger_internal")
+--
+--remote.add_interface("DedLib_internal", {
+--    add_message_to_logger_internal = function(tick, modName, prefix, level, message)
+--        Logger_Internal.add_log_message(tick, modName, prefix, level, message)
+--    end
+--})
